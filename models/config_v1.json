@@ -26,11 +26,13 @@
     "daily_volume",
     "hourly_volume",
     "ТипДокумента_freq",
-    "is_manual"
+    "is_manual",
+    "anomaly_score",
+    "anomaly_label"
   ],
   "contamination": 0.01,
   "model_type": "IsolationForest",
   "n_estimators": 200,
-  "training_date": "2026-03-30 18:59:38.417931",
+  "training_date": "2026-03-30 19:08:34.871981",
   "training_rows": 368014
 }
