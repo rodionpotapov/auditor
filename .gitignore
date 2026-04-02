@@ -1,2 +1,5 @@
 /data/*
-*.pkl
+/models/*.pkl
+/venv/
+__pycache__/
+*.log
