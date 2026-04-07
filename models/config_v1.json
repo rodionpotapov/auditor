@@ -27,12 +27,20 @@
     "hourly_volume",
     "ТипДокумента_freq",
     "is_manual",
-    "anomaly_score",
-    "anomaly_label"
+    "time_since_last_contractor",
+    "time_since_last_pair"
   ],
   "contamination": 0.01,
-  "model_type": "IsolationForest",
+  "model_type": "IsolationForest+LOF ensemble",
   "n_estimators": 200,
-  "training_date": "2026-03-30 19:08:34.871981",
-  "training_rows": 368014
+  "lof_n_neighbors": 50,
+  "training_date": "2026-04-07 11:56:06.933992",
+  "training_rows": 368014,
+  "whitelist_doc_types": [
+    "Регламентная операция",
+    "Отражение зарплаты в бухучете",
+    "Операции ЕНС",
+    "Уведомление об исчисленных суммах налогов",
+    "Сведения об удержанном НДФЛ"
+  ]
 }
