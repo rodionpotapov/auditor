@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Аудитор | ИнфоТэк</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --sb:#1a2035;--sb2:#141929;--sbb:#242d44;--sbt:#8896b0;--acc:#4c8df5;
+  --bg:#f0f2f6;--white:#fff;--border:#e2e8f0;--text:#1a202c;--muted:#718096;
+  --red:#e53e3e;--orange:#dd6b20;--green:#38a169;--r:10px;--sh:0 1px 4px rgba(0,0,0,.07);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
+
+/* Сайдбар */
+.sidebar{width:240px;min-width:240px;background:var(--sb);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;}
+.sb-brand{padding:18px 16px;background:var(--sb2);border-bottom:1px solid var(--sbb);display:flex;align-items:center;gap:12px;}
+.sb-logo{width:38px;height:38px;background:#f5c228;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;font-family:Georgia,serif;color:#1a2035;flex-shrink:0;}
+.sb-name{font-size:15px;font-weight:700;color:#fff;}
+.sb-sub{font-size:11px;color:#4a5c7a;margin-top:1px;}
+.sb-sec{padding:14px 16px 5px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#364256;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:13px;color:var(--sbt);cursor:pointer;border-left:3px solid transparent;transition:all .12s;user-select:none;}
+.sb-item:hover{background:#1f2b42;color:#c0cce0;}
+.sb-item.active{background:#1f2b42;color:#fff;border-left-color:var(--acc);font-weight:600;}
+.sb-item-icon{width:18px;text-align:center;opacity:.7;flex-shrink:0;}
+.sb-item.active .sb-item-icon{opacity:1;}
+.sb-item-label{flex:1;}
+.tip-wrap{position:relative;margin-left:auto;}
+.tip-btn{width:16px;height:16px;background:#2a3550;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#5a6d8c;cursor:help;border:none;transition:all .12s;}
+.tip-btn:hover{background:var(--acc);color:#fff;}
+.tip-text{display:none;position:absolute;right:22px;top:-6px;background:#0d1117;color:#e0e6f0;font-size:11px;padding:9px 13px;border-radius:7px;width:210px;line-height:1.55;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);border:1px solid #2d3548;pointer-events:none;white-space:normal;}
+.tip-wrap:hover .tip-text{display:block;}
+.sb-divider{border-top:1px solid var(--sbb);margin:8px 0;}
+.sb-footer{margin-top:auto;padding:12px 16px;font-size:11px;color:#364256;border-top:1px solid var(--sbb);line-height:1.7;}
+
+/* Основной контент */
+.main{flex:1;padding:24px;overflow-y:auto;min-width:0;}
+.page{display:none;}
+.page.active{display:block;}
+.top-bar{background:#fff;border-radius:var(--r);padding:16px 22px;margin-bottom:18px;box-shadow:var(--sh);}
+.top-title{font-size:17px;font-weight:700;}
+.top-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+.card{background:#fff;border-radius:var(--r);padding:20px;box-shadow:var(--sh);margin-bottom:16px;}
+.card-title{font-size:13px;font-weight:700;color:#2d3748;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #f0f2f6;display:flex;align-items:center;gap:8px;}
+
+/* Параметры */
+.params-row{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;}
+.param-block{flex:1;min-width:200px;}
+.param-label{font-size:12px;font-weight:600;color:#4a5568;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.param-value-row{display:flex;align-items:baseline;gap:6px;margin-bottom:6px;}
+.param-big{font-size:22px;font-weight:700;color:var(--acc);}
+.param-hint{font-size:11px;color:var(--muted);}
+input[type=range]{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;background:#e2e8f0;outline:none;cursor:pointer;transition:opacity .15s;}
+input[type=range].frozen{opacity:.35;cursor:not-allowed;pointer-events:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--acc);cursor:pointer;box-shadow:0 0 0 3px rgba(76,141,245,.2);}
+.range-minmax{display:flex;justify-content:space-between;font-size:10px;color:#a0aec0;margin-top:3px;}
+.param-divider{width:1px;background:var(--border);align-self:stretch;margin:0 4px;}
+.all-btn{padding:9px 18px;background:#f0f2f6;border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:#4a5568;cursor:pointer;transition:all .12s;white-space:nowrap;align-self:flex-end;}
+.all-btn:hover{background:var(--border);}
+.all-btn.on{background:#ebf4ff;border-color:#bee3f8;color:var(--acc);}
+.avail-hint{font-size:11px;color:var(--muted);margin-top:6px;min-height:16px;}
+.avail-hint b{color:var(--text);}
+.frozen-label{font-size:11px;color:var(--acc);margin-top:6px;font-style:italic;}
+
+/* Загрузка */
+.drop-zone{border:2px dashed #bee3f8;background:#f8fbff;border-radius:8px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .15s;}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--acc);background:#eef4ff;}
+.drop-icon{font-size:34px;opacity:.5;margin-bottom:8px;}
+.drop-title{font-size:14px;font-weight:600;color:#4a5568;}
+.drop-sub{font-size:12px;color:#a0aec0;margin-top:4px;}
+.drop-btn{display:inline-block;margin-top:10px;padding:7px 20px;background:var(--acc);color:#fff;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;box-shadow:0 2px 6px rgba(76,141,245,.3);}
+.drop-btn:hover{background:#3a7ae4;}
+#file-input{display:none;}
+.file-info{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;font-size:13px;margin-bottom:12px;}
+.file-name{font-weight:600;color:#276749;}
+.file-size{font-size:11px;color:#68d391;}
+.file-remove{margin-left:auto;background:none;border:none;color:#a0aec0;cursor:pointer;font-size:16px;padding:0 4px;}
+.file-remove:hover{color:var(--red);}
+
+/* Валидация колонок */
+.col-validation{background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:14px;}
+.col-val-title{font-size:12px;font-weight:700;color:#4a5568;margin-bottom:10px;}
+.col-val-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.col-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+.col-chip.ok{background:#f0fff4;color:var(--green);border:1px solid #c6f6d5;}
+.col-chip.err{background:#fff5f5;color:var(--red);border:1px solid #fed7d7;}
+.col-chip.warn{background:#fffff0;color:var(--orange);border:1px solid #feebc8;}
+.col-val-msg{font-size:12px;margin-top:10px;color:var(--red);font-weight:600;}
+.col-val-msg.ok{color:var(--green);}
+
+.action-row{display:flex;gap:10px;align-items:center;margin-top:14px;}
+.analyze-btn{padding:9px 24px;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(76,141,245,.35);transition:all .15s;}
+.analyze-btn:hover{background:#3a7ae4;transform:translateY(-1px);}
+.analyze-btn:disabled{background:#a0aec0;cursor:not-allowed;transform:none;box-shadow:none;}
+.loader{display:none;align-items:center;gap:10px;font-size:13px;color:var(--muted);}
+.loader.show{display:flex;}
+.spinner{width:20px;height:20px;border:2px solid #e2e8f0;border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.progress-bar{height:3px;background:#e2e8f0;border-radius:2px;margin:8px 0;display:none;overflow:hidden;}
+.progress-bar.show{display:block;}
+.progress-fill{height:100%;background:var(--acc);border-radius:2px;animation:indeterminate 1.5s ease-in-out infinite;}
+@keyframes indeterminate{0%{width:0%;margin-left:0;}50%{width:60%;margin-left:20%;}100%{width:0%;margin-left:100%;}}
+.error-bar{background:#fff5f5;border:1px solid #fed7d7;border-radius:8px;padding:12px 16px;font-size:13px;color:#c53030;margin-top:12px;display:none;}
+.error-bar.show{display:block;}
+
+/* Метрики */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.metric{background:#fff;border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh);border-top:3px solid var(--acc);}
+.metric.red{border-top-color:var(--red);}
+.metric.orange{border-top-color:var(--orange);}
+.metric.green{border-top-color:var(--green);}
+.metric-num{font-size:30px;font-weight:700;}
+.metric.red .metric-num{color:var(--red);}
+.metric.orange .metric-num{color:var(--orange);}
+.metric-label{font-size:12px;color:var(--muted);margin-top:4px;}
+
+/* Таблица */
+.table-card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:16px;}
+.table-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.table-header-title{font-size:14px;font-weight:700;}
+.table-scroll{overflow-x:auto;max-height:460px;overflow-y:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead th{background:#f7f9fc;padding:10px 14px;text-align:left;font-weight:600;color:#4a5568;border-bottom:2px solid var(--border);position:sticky;top:0;white-space:nowrap;}
+tbody tr{border-bottom:1px solid #f0f2f6;transition:background .08s;}
+tbody tr:hover{background:#f7f9fc;}
+tbody td{padding:9px 14px;color:var(--text);}
+.risk-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.risk-high{background:#fff5f5;color:var(--red);border:1px solid #fed7d7;}
+.risk-med{background:#fffaf0;color:var(--orange);border:1px solid #feebc8;}
+.risk-low{background:#f0fff4;color:var(--green);border:1px solid #c6f6d5;}
+.wl-btn{padding:3px 10px;background:#f7f9fc;border:1px solid var(--border);border-radius:5px;font-size:11px;font-weight:600;color:#4a5568;cursor:pointer;white-space:nowrap;transition:all .12s;}
+.wl-btn:hover{background:#ebf4ff;border-color:#bee3f8;color:var(--acc);}
+.wl-btn.added{background:#f0fff4;border-color:#c6f6d5;color:var(--green);cursor:default;}
+.download-btn{padding:9px 22px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(56,161,105,.3);transition:all .15s;display:inline-flex;align-items:center;gap:8px;}
+.download-btn:hover{background:#2f855a;transform:translateY(-1px);}
+.ok-bar{background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;padding:10px 16px;font-size:12px;color:#276749;display:flex;gap:20px;margin-top:8px;}
+.results-section{display:none;}
+.results-section.show{display:block;}
+
+/* Autocomplete */
+.ac-wrap{position:relative;}
+.ac-input{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;color:var(--text);background:#fff;outline:none;transition:border-color .12s;}
+.ac-input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(76,141,245,.1);}
+.ac-input::placeholder{color:#a0aec0;}
+.ac-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:1000;max-height:200px;overflow-y:auto;}
+.ac-dropdown.show{display:block;}
+.ac-item{padding:8px 12px;font-size:13px;cursor:pointer;color:var(--text);transition:background .08s;}
+.ac-item:hover{background:#f0f4ff;color:var(--acc);}
+.ac-empty{padding:10px 12px;font-size:12px;color:var(--muted);font-style:italic;}
+
+/* Whitelist */
+.wl-empty{text-align:center;padding:30px 20px;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:8px;}
+.wl-rule{display:flex;align-items:center;gap:10px;padding:11px 14px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:13px;}
+.wl-badge{padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;}
+.wl-badge.doc{background:#ebf4ff;color:var(--acc);border:1px solid #bee3f8;}
+.wl-badge.pair{background:#faf5ff;color:#805ad5;border:1px solid #e9d8fd;}
+.wl-rule-text{flex:1;}
+.wl-rule-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.wl-del{background:none;border:none;color:#a0aec0;cursor:pointer;font-size:15px;padding:0 4px;flex-shrink:0;}
+.wl-del:hover{color:var(--red);}
+.wl-form-card{background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:16px;}
+.wl-form-title{font-size:13px;font-weight:700;color:#2d3748;margin-bottom:12px;}
+.wl-tabs{display:flex;margin-bottom:14px;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:#fff;}
+.wl-tab{flex:1;padding:8px;text-align:center;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .12s;border:none;background:none;}
+.wl-tab.active{background:var(--acc);color:#fff;}
+.wl-tab:hover:not(.active){background:#f0f2f6;}
+.wl-form-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+.wl-form-row .ac-wrap{flex:1;min-width:140px;}
+.wl-add-btn{padding:9px 20px;background:var(--acc);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;height:38px;}
+.wl-add-btn:hover{background:#3a7ae4;}
+.wl-example{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6;}
+.wl-example b{color:#4a5568;}
+
+/* История */
+.hist-item{display:flex;align-items:center;gap:14px;padding:13px 16px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:13px;}
+.hist-date{font-size:11px;color:var(--muted);min-width:140px;flex-shrink:0;}
+.hist-file{font-weight:600;flex:1;}
+.hist-rows{font-size:11px;color:var(--muted);white-space:nowrap;}
+.hist-count{padding:2px 10px;background:#ebf4ff;border:1px solid #bee3f8;border-radius:20px;font-size:11px;font-weight:600;color:var(--acc);white-space:nowrap;}
+.hist-high{padding:2px 10px;background:#fff5f5;border:1px solid #fed7d7;border-radius:20px;font-size:11px;font-weight:600;color:var(--red);white-space:nowrap;}
+.hist-del{background:none;border:none;color:#a0aec0;cursor:pointer;font-size:15px;padding:0 4px;flex-shrink:0;margin-left:4px;}
+.hist-del:hover{color:var(--red);}
+.empty-hint{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">1С</div>
+    <div><div class="sb-name">Аудитор</div><div class="sb-sub">ИнфоТэк · ML-модуль</div></div>
+  </div>
+  <div class="sb-sec">Меню</div>
+  <div class="sb-item active" onclick="showPage('analyze',this)">
+    <span class="sb-item-icon">🔍</span><span class="sb-item-label">Анализ аномалий</span>
+  </div>
+  <div class="sb-item" onclick="showPage('whitelist',this)">
+    <span class="sb-item-icon">📋</span><span class="sb-item-label">Whitelist</span>
+    <div class="tip-wrap"><button class="tip-btn">?</button><div class="tip-text">Операции из этого списка исключаются из анализа. Пополняется кнопкой «В whitelist» в таблице.</div></div>
+  </div>
+  <div class="sb-item" onclick="showPage('history',this)">
+    <span class="sb-item-icon">📊</span><span class="sb-item-label">История отчётов</span>
+    <div class="tip-wrap"><button class="tip-btn">?</button><div class="tip-text">Журнал всех запусков. Журнал запусков. Проводки обрабатываются локально и не сохраняются.</div></div>
+  </div>
+  <div class="sb-divider"></div>
+  <div class="sb-footer">🔒 Все данные обрабатываются локально<br>Версия 1.0.0 · © ИнфоТэк, 2026</div>
+</aside>
+
+<main class="main">
+
+  <!-- Анализ -->
+  <div class="page active" id="page-analyze">
+    <div class="top-bar">
+      <div class="top-title">🔍 Анализ аномалий в проводках</div>
+      <div class="top-sub">Загрузите выгрузку из 1С:Бухгалтерия и получите отчёт с подозрительными операциями</div>
+    </div>
+
+    <!-- Параметры -->
+    <div class="card">
+      <div class="card-title">⚙️ Параметры анализа</div>
+      <div class="params-row">
+
+        <div class="param-block">
+          <div class="param-label">
+            Минимальный порог риска
+            <div class="tip-wrap"><button class="tip-btn">?</button><div class="tip-text">Фильтрует все аномалии — отображаются только те, чей риск выше порога. Влияет на максимум «топа».</div></div>
+          </div>
+          <div class="param-value-row">
+            <span class="param-big" id="minRiskVal">80</span>
+            <span class="param-hint">из 100</span>
+          </div>
+          <input type="range" id="minRisk" min="0" max="100" value="80" step="5" oninput="onMinRiskChange(this.value)">
+          <div class="range-minmax"><span>0</span><span>100</span></div>
+          <div class="avail-hint" id="avail-hint">Запустите анализ</div>
+        </div>
+
+        <div class="param-divider"></div>
+
+        <div class="param-block">
+          <div class="param-label">
+            Показать топ аномалий
+            <div class="tip-wrap"><button class="tip-btn">?</button><div class="tip-text">Сколько аномалий показывать из отфильтрованных. Максимум = количество аномалий выше порога риска.</div></div>
+          </div>
+          <div class="param-value-row">
+            <span class="param-big" id="topNVal">35</span>
+            <span class="param-hint" id="topN-of"></span>
+          </div>
+          <input type="range" id="topN" min="1" max="500" value="35" step="1" oninput="onTopNChange(this.value)">
+          <div class="range-minmax"><span>1</span><span id="topN-max-label">—</span></div>
+          <div class="frozen-label" id="frozen-label" style="display:none;">Показаны все аномалии</div>
+        </div>
+
+        <button class="all-btn" id="allBtn" onclick="toggleAll()">Все аномалии</button>
+      </div>
+    </div>
+
+    <!-- Загрузка -->
+    <div class="card">
+      <div class="card-title">📂 Журнал проводок</div>
+
+      <div id="file-info" class="file-info" style="display:none;">
+        <span style="font-size:22px;">📄</span>
+        <div><div class="file-name" id="file-name-text"></div><div class="file-size" id="file-size-text"></div></div>
+        <button class="file-remove" onclick="removeFile()">✕</button>
+      </div>
+
+      <!-- Валидация колонок -->
+      <div id="col-validation" class="col-validation" style="display:none;">
+        <div class="col-val-title">📋 Проверка обязательных колонок</div>
+        <div class="col-val-grid" id="col-chips"></div>
+        <div class="col-val-msg" id="col-val-msg"></div>
+      </div>
+
+      <div id="drop-zone" class="drop-zone"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handleDrop(event)">
+        <div class="drop-icon">☁️</div>
+        <div class="drop-title">Перетащите файл сюда</div>
+        <div class="drop-sub">CSV или Excel-выгрузка из 1С:Бухгалтерия</div>
+        <button class="drop-btn" onclick="document.getElementById('file-input').click()">Выбрать файл</button>
+        <input type="file" id="file-input" accept=".csv,.xlsx,.xls" onchange="handleFile(this.files[0])">
+      </div>
+
+      <div class="action-row">
+        <button class="analyze-btn" id="analyze-btn" onclick="runAnalysis()" disabled>🔍 Запустить анализ</button>
+        <div class="loader" id="loader"><div class="spinner"></div><span>Анализируем проводки...</span></div>
+      </div>
+      <div class="progress-bar" id="progress-bar"><div class="progress-fill"></div></div>
+      <div class="error-bar" id="error-bar"></div>
+    </div>
+
+    <!-- Результаты -->
+    <div class="results-section" id="results">
+      <div class="metrics">
+        <div class="metric"><div class="metric-num" id="m-total">—</div><div class="metric-label">Показано аномалий</div></div>
+        <div class="metric red"><div class="metric-num" id="m-high">—</div><div class="metric-label">Высокий риск ≥80</div></div>
+        <div class="metric orange"><div class="metric-num" id="m-med">—</div><div class="metric-label">Средний риск 60–79</div></div>
+        <div class="metric green"><div class="metric-num" id="m-max">—</div><div class="metric-label">Макс. риск</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-header-title">📋 Подозрительные операции</div>
+          <button class="download-btn" onclick="downloadFiltered()">⬇️ Скачать Excel</button>
+        </div>
+        <div class="table-scroll">
+          <table><thead id="table-head"></thead><tbody id="table-body"></tbody></table>
+        </div>
+      </div>
+      <div class="ok-bar" id="ok-bar" style="display:none;">
+        <span>✅ Готово</span><span id="ok-file"></span><span id="ok-total"></span><span id="ok-high"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Whitelist -->
+  <div class="page" id="page-whitelist">
+    <div class="top-bar">
+      <div class="top-title">📋 Whitelist — Известные нормальные операции</div>
+      <div class="top-sub">Эти операции автоматически исключаются из анализа. Добавляйте правила после подтверждения бухгалтером.</div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="justify-content:space-between;align-items:center;">
+        <span>Активные правила <span id="wl-count" style="font-size:11px;font-weight:400;color:var(--muted);"></span></span>
+        <div style="display:flex;gap:8px;">
+          <button onclick="exportWhitelist()" style="padding:5px 14px;background:#f0f2f6;border:1px solid #e2e8f0;border-radius:7px;font-size:12px;font-weight:600;color:#4a5568;cursor:pointer;">⬇ Скачать JSON</button>
+          <label style="padding:5px 14px;background:#f0f2f6;border:1px solid #e2e8f0;border-radius:7px;font-size:12px;font-weight:600;color:#4a5568;cursor:pointer;">
+            ⬆ Загрузить JSON
+            <input type="file" accept=".json" style="display:none;" onchange="importWhitelist(this)">
+          </label>
+        </div>
+      </div>
+      <div id="wl-list"><div class="empty-hint">Загрузка...</div></div>
+      <div class="wl-form-card">
+        <div class="wl-form-title">➕ Добавить правило</div>
+        <div class="wl-tabs">
+          <button class="wl-tab active" onclick="switchWlTab('doc',this)">По типу документа</button>
+          <button class="wl-tab" onclick="switchWlTab('pair',this)">По паре счетов</button>
+        </div>
+        <div id="wl-tab-doc">
+          <div class="wl-form-row">
+            <div class="ac-wrap" style="flex:2;">
+              <input class="ac-input" id="wl-doc-type" placeholder="Например: Регламентная операция" autocomplete="off"
+                oninput="acFilter(this,'ac-doc',docTypes)" onfocus="acFilter(this,'ac-doc',docTypes)" onblur="acHide('ac-doc')">
+              <div class="ac-dropdown" id="ac-doc"></div>
+            </div>
+            <button class="wl-add-btn" onclick="submitWlRule()">Добавить</button>
+          </div>
+          <div class="wl-example"><b>Когда использовать:</b> тип документа <i>всегда</i> норма независимо от суммы.<br><b>Примеры:</b> «Регламентная операция», «Отражение зарплаты в бухучете»</div>
+        </div>
+        <div id="wl-tab-pair" style="display:none;">
+          <div class="wl-form-row">
+            <div class="ac-wrap">
+              <input class="ac-input" id="wl-acct-dt" placeholder="Счёт Дт (напр. 68.90)" autocomplete="off"
+                oninput="acFilter(this,'ac-dt',accounts)" onfocus="acFilter(this,'ac-dt',accounts)" onblur="acHide('ac-dt')">
+              <div class="ac-dropdown" id="ac-dt"></div>
+            </div>
+            <div class="ac-wrap">
+              <input class="ac-input" id="wl-acct-kt" placeholder="Счёт Кт (напр. 51)" autocomplete="off"
+                oninput="acFilter(this,'ac-kt',accounts)" onfocus="acFilter(this,'ac-kt',accounts)" onblur="acHide('ac-kt')">
+              <div class="ac-dropdown" id="ac-kt"></div>
+            </div>
+            <div class="ac-wrap" style="flex:2;">
+              <input class="ac-input" id="wl-pair-doc" placeholder="Тип документа" autocomplete="off"
+                oninput="acFilter(this,'ac-pdoc',docTypes)" onfocus="acFilter(this,'ac-pdoc',docTypes)" onblur="acHide('ac-pdoc')">
+              <div class="ac-dropdown" id="ac-pdoc"></div>
+            </div>
+            <button class="wl-add-btn" onclick="submitWlRule()">Добавить</button>
+          </div>
+          <div class="wl-example"><b>Когда использовать:</b> конкретная пара счетов + тип документа всегда норма.<br><b>Пример:</b> 68.90 → 51 + «Списание с расчетного счета» = налоговые платежи</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- История -->
+  <div class="page" id="page-history">
+    <div class="top-bar">
+      <div class="top-title">📊 История отчётов</div>
+      <div class="top-sub">Журнал всех запусков анализа. Данные проводок обрабатываются локально и не сохраняются после анализа.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Запуски анализа</div>
+      <div id="hist-list"><div class="empty-hint">Загрузка...</div></div>
+    </div>
+  </div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
