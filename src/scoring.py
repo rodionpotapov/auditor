@@ -1,38 +1,13 @@
-import json
+# src/scoring.py
+
 import pandas as pd
-import numpy as np
-from pathlib import Path
 from sklearn.preprocessing import MinMaxScaler
 
-from src.config import (
-    SUSPICIOUS_PAIRS, WHITELIST_DOC_TYPES, WHITELIST_PAIRS,
-    WHITELIST_REQUIRES_NOT_MANUAL, BOOST_MANUAL, BOOST_AMOUNT_OUTLIER,
-    BOOST_NIGHT, BOOST_FIRST_OPERATION, BOOST_SUSPICIOUS_PAIR,
-)
-
-# Путь к динамическому whitelist (накапливается через UI)
-_DYNAMIC_WL_PATH = Path(__file__).parent.parent / "data" / "whitelist_dynamic.json"
-
-
-def _load_dynamic_whitelist():
-    """Читает правила добавленные через UI."""
-    if not _DYNAMIC_WL_PATH.exists():
-        return {"doc_types": [], "pairs": []}
-
-    raw = json.loads(_DYNAMIC_WL_PATH.read_text(encoding="utf-8"))
-    rules = raw.get("rules", [])
-
-    doc_types = [r["doc_type"] for r in rules if r.get("type") == "doc_type" and r.get("doc_type")]
-    pairs     = [
-        {"account_pair": r["account_pair"], "doc_type": r.get("doc_type", "")}
-        for r in rules
-        if r.get("type") == "pair" and r.get("account_pair")
-    ]
-    return {"doc_types": doc_types, "pairs": pairs}
+from src.config import SUSPICIOUS_PAIRS, WHITELIST_REQUIRES_NOT_MANUAL
+from src.models import BoosterSettings, WhitelistRule
 
 
 def normalize_scores(data: pd.DataFrame) -> pd.DataFrame:
-    """Нормализует ensemble_score → risk_score (0–100)."""
     scaler = MinMaxScaler(feature_range=(0, 100))
     data["risk_score"] = scaler.fit_transform(
         data[["ensemble_score"]]
@@ -40,21 +15,26 @@ def normalize_scores(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def apply_boosts(data: pd.DataFrame) -> pd.DataFrame:
-    """Применяет бустеры — берёт максимальный коэффициент."""
+def apply_boosts(data: pd.DataFrame, boosters: BoosterSettings | None = None) -> pd.DataFrame:
+    """Применяет бустеры из БД. Если не переданы — использует дефолты из config."""
+    from src.config import (
+        BOOST_MANUAL, BOOST_AMOUNT_OUTLIER, BOOST_NIGHT,
+        BOOST_FIRST_OPERATION, BOOST_SUSPICIOUS_PAIR,
+    )
+
+    bm  = boosters.boost_manual           if boosters else BOOST_MANUAL
+    bao = boosters.boost_amount_outlier   if boosters else BOOST_AMOUNT_OUTLIER
+    bn  = boosters.boost_night            if boosters else BOOST_NIGHT
+    bfo = boosters.boost_first_operation  if boosters else BOOST_FIRST_OPERATION
+    bsp = boosters.boost_suspicious_pair  if boosters else BOOST_SUSPICIOUS_PAIR
 
     def get_boost(row):
         boosts = []
-        if row["is_manual"] == 1:
-            boosts.append(BOOST_MANUAL)
-        if row["is_amount_outlier"] == 1:
-            boosts.append(BOOST_AMOUNT_OUTLIER)
-        if row["is_night"] == 1:
-            boosts.append(BOOST_NIGHT)
-        if row["is_first_operation"] == 1:
-            boosts.append(BOOST_FIRST_OPERATION)
-        if row["account_pair"] in SUSPICIOUS_PAIRS:
-            boosts.append(BOOST_SUSPICIOUS_PAIR)
+        if row["is_manual"] == 1:           boosts.append(bm)
+        if row["is_amount_outlier"] == 1:   boosts.append(bao)
+        if row["is_night"] == 1:            boosts.append(bn)
+        if row["is_first_operation"] == 1:  boosts.append(bfo)
+        if row["account_pair"] in SUSPICIOUS_PAIRS: boosts.append(bsp)
         return max(boosts) if boosts else 1.0
 
     data["boosted_score"] = (
@@ -64,49 +44,35 @@ def apply_boosts(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def apply_whitelist(data: pd.DataFrame) -> pd.DataFrame:
-    """
-    Обнуляет boosted_score для заведомо нормальных операций.
-    Объединяет правила из config.py и динамического whitelist_dynamic.json.
-    """
-    dynamic = _load_dynamic_whitelist()
+def apply_whitelist(data: pd.DataFrame, whitelist_rules: list[WhitelistRule] | None = None) -> pd.DataFrame:
+    """Применяет whitelist из БД."""
+    if not whitelist_rules:
+        return data
 
-    # Объединяем типы документов из config и dynamic whitelist
-    all_doc_types = list(set(WHITELIST_DOC_TYPES + dynamic["doc_types"]))
+    doc_types = [r.doc_type for r in whitelist_rules if r.type == "doc_type" and r.doc_type]
+    pairs     = [{"account_pair": r.account_pair, "doc_type": r.doc_type}
+                 for r in whitelist_rules if r.type == "pair" and r.account_pair]
 
-    # Whitelist по типу документа (только если is_manual = 0)
     whitelist_mask = (
-        data["ТипДокумента"].isin(all_doc_types) &
+        data["ТипДокумента"].isin(doc_types) &
         (data["is_manual"] == 0 if WHITELIST_REQUIRES_NOT_MANUAL else True)
     )
 
-    # Объединяем пары из config и dynamic whitelist
-    all_pairs = WHITELIST_PAIRS + dynamic["pairs"]
-
-    # Whitelist по паре счетов + тип документа (только если is_manual = 0)
     pairs_mask = pd.Series(False, index=data.index)
-    for rule in all_pairs:
-        mask = (
-            (data["account_pair"] == rule["account_pair"]) &
-            (data["is_manual"] == 0)
-        )
-        # Если тип документа указан — добавляем это условие
+    for rule in pairs:
+        mask = (data["account_pair"] == rule["account_pair"]) & (data["is_manual"] == 0)
         if rule.get("doc_type"):
             mask = mask & (data["ТипДокумента"] == rule["doc_type"])
         pairs_mask = pairs_mask | mask
 
     data.loc[whitelist_mask | pairs_mask, "boosted_score"] = 0
 
-    n_zeroed = (whitelist_mask | pairs_mask).sum()
-    print(f"Обнулено через whitelist: {n_zeroed} строк "
-          f"(config: {len(WHITELIST_DOC_TYPES)} типов + {len(WHITELIST_PAIRS)} пар, "
-          f"dynamic: {len(dynamic['doc_types'])} типов + {len(dynamic['pairs'])} пар)")
-
+    print(f"Whitelist: обнулено {(whitelist_mask | pairs_mask).sum()} строк "
+          f"({len(doc_types)} типов документов, {len(pairs)} пар счетов)")
     return data
 
 
 def explain_anomaly(row) -> str:
-    """Генерирует текстовое объяснение аномалии."""
     reasons = []
     if row["is_rare_pair"]:
         reasons.append(f"Редкая пара счетов {row['СчетДт']}→{row['СчетКт']}")
@@ -129,10 +95,13 @@ def explain_anomaly(row) -> str:
     return "; ".join(reasons)
 
 
-def score(data: pd.DataFrame) -> pd.DataFrame:
-    """Полный пайплайн скоринга: нормализация → бустеры → whitelist → объяснения."""
+def score(
+    data: pd.DataFrame,
+    boosters: BoosterSettings | None = None,
+    whitelist_rules: list[WhitelistRule] | None = None,
+) -> pd.DataFrame:
     data = normalize_scores(data)
-    data = apply_boosts(data)
-    data = apply_whitelist(data)
+    data = apply_boosts(data, boosters)
+    data = apply_whitelist(data, whitelist_rules)
     data["explanation"] = data.apply(explain_anomaly, axis=1)
     return data

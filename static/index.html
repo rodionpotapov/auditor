@@ -16,24 +16,39 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 
 /* Сайдбар */
 .sidebar{width:240px;min-width:240px;background:var(--sb);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;}
-.sb-brand{padding:18px 16px;background:var(--sb2);border-bottom:1px solid var(--sbb);display:flex;align-items:center;gap:12px;}
-.sb-logo{width:38px;height:38px;background:#f5c228;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;font-family:Georgia,serif;color:#1a2035;flex-shrink:0;}
-.sb-name{font-size:15px;font-weight:700;color:#fff;}
-.sb-sub{font-size:11px;color:#4a5c7a;margin-top:1px;}
-.sb-sec{padding:14px 16px 5px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#364256;}
+.sb-brand{padding:14px 16px;background:var(--sb2);border-bottom:1px solid var(--sbb);}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-logo{width:36px;height:36px;background:#f5c228;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;font-family:Georgia,serif;color:#1a2035;flex-shrink:0;}
+.sb-name{font-size:14px;font-weight:700;color:#fff;}
+.sb-sub{font-size:10px;color:#4a5c7a;margin-top:1px;}
+
+/* Компания в сайдбаре */
+.sb-company{padding:10px 16px;border-bottom:1px solid var(--sbb);}
+.sb-company-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#364256;margin-bottom:6px;}
+.company-select-wrap{position:relative;}
+.company-select-wrap select{width:100%;padding:6px 28px 6px 10px;background:#1f2b42;border:1px solid #2d3f5a;border-radius:6px;color:#c0cce0;font-size:12px;font-family:inherit;appearance:none;cursor:pointer;outline:none;}
+.company-select-wrap select:focus{border-color:var(--acc);}
+.company-select-wrap::after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#5a6d8c;pointer-events:none;font-size:11px;}
+.sb-company-actions{display:flex;gap:6px;margin-top:6px;}
+.sb-company-btn{flex:1;padding:4px 0;background:#1f2b42;border:1px solid #2d3f5a;border-radius:5px;color:#8896b0;font-size:10px;font-weight:600;cursor:pointer;text-align:center;}
+.sb-company-btn:hover{background:#253348;color:#c0cce0;}
+
+.sb-sec{padding:12px 16px 4px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#364256;}
 .sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:13px;color:var(--sbt);cursor:pointer;border-left:3px solid transparent;transition:all .12s;user-select:none;}
 .sb-item:hover{background:#1f2b42;color:#c0cce0;}
 .sb-item.active{background:#1f2b42;color:#fff;border-left-color:var(--acc);font-weight:600;}
 .sb-item-icon{width:18px;text-align:center;opacity:.7;flex-shrink:0;}
 .sb-item.active .sb-item-icon{opacity:1;}
+.sb-company-btn.danger { color: #fc8181; }
+.sb-company-btn.danger:hover { background: #2d1f1f; color: #feb2b2; }
 .sb-item-label{flex:1;}
 .tip-wrap{position:relative;margin-left:auto;}
 .tip-btn{width:16px;height:16px;background:#2a3550;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#5a6d8c;cursor:help;border:none;transition:all .12s;}
 .tip-btn:hover{background:var(--acc);color:#fff;}
 .tip-text{display:none;position:absolute;right:22px;top:-6px;background:#0d1117;color:#e0e6f0;font-size:11px;padding:9px 13px;border-radius:7px;width:210px;line-height:1.55;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);border:1px solid #2d3548;pointer-events:none;white-space:normal;}
 .tip-wrap:hover .tip-text{display:block;}
-.sb-divider{border-top:1px solid var(--sbb);margin:8px 0;}
-.sb-footer{margin-top:auto;padding:12px 16px;font-size:11px;color:#364256;border-top:1px solid var(--sbb);line-height:1.7;}
+.sb-divider{border-top:1px solid var(--sbb);margin:6px 0;}
+.sb-footer{margin-top:auto;padding:10px 16px;font-size:11px;color:#364256;border-top:1px solid var(--sbb);line-height:1.7;}
 
 /* Основной контент */
 .main{flex:1;padding:24px;overflow-y:auto;min-width:0;}
@@ -71,25 +86,21 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .drop-title{font-size:14px;font-weight:600;color:#4a5568;}
 .drop-sub{font-size:12px;color:#a0aec0;margin-top:4px;}
 .drop-btn{display:inline-block;margin-top:10px;padding:7px 20px;background:var(--acc);color:#fff;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;box-shadow:0 2px 6px rgba(76,141,245,.3);}
-.drop-btn:hover{background:#3a7ae4;}
 #file-input{display:none;}
 .file-info{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;font-size:13px;margin-bottom:12px;}
 .file-name{font-weight:600;color:#276749;}
 .file-size{font-size:11px;color:#68d391;}
 .file-remove{margin-left:auto;background:none;border:none;color:#a0aec0;cursor:pointer;font-size:16px;padding:0 4px;}
 .file-remove:hover{color:var(--red);}
-
-/* Валидация колонок */
-.col-validation{background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:14px;}
-.col-val-title{font-size:12px;font-weight:700;color:#4a5568;margin-bottom:10px;}
+.col-validation{background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:12px;}
+.col-val-title{font-size:12px;font-weight:700;color:#4a5568;margin-bottom:8px;}
 .col-val-grid{display:flex;flex-wrap:wrap;gap:8px;}
-.col-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+.col-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}
 .col-chip.ok{background:#f0fff4;color:var(--green);border:1px solid #c6f6d5;}
 .col-chip.err{background:#fff5f5;color:var(--red);border:1px solid #fed7d7;}
 .col-chip.warn{background:#fffff0;color:var(--orange);border:1px solid #feebc8;}
-.col-val-msg{font-size:12px;margin-top:10px;color:var(--red);font-weight:600;}
+.col-val-msg{font-size:12px;margin-top:8px;color:var(--red);font-weight:600;}
 .col-val-msg.ok{color:var(--green);}
-
 .action-row{display:flex;gap:10px;align-items:center;margin-top:14px;}
 .analyze-btn{padding:9px 24px;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(76,141,245,.35);transition:all .15s;}
 .analyze-btn:hover{background:#3a7ae4;transform:translateY(-1px);}
@@ -118,7 +129,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 /* Таблица */
 .table-card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:16px;}
-.table-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.table-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .table-header-title{font-size:14px;font-weight:700;}
 .table-scroll{overflow-x:auto;max-height:460px;overflow-y:auto;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
@@ -173,6 +184,25 @@ tbody td{padding:9px 14px;color:var(--text);}
 .wl-example{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6;}
 .wl-example b{color:#4a5568;}
 
+/* Настройки — бустеры */
+.booster-row{display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid #f0f2f6;}
+.booster-row:last-child{border-bottom:none;}
+.booster-label{font-size:13px;color:var(--text);min-width:220px;}
+.booster-control{display:flex;align-items:center;gap:12px;flex:1;}
+.booster-control input[type=range]{flex:1;}
+.booster-val{font-size:14px;font-weight:700;color:var(--acc);min-width:36px;text-align:right;}
+.save-btn{padding:9px 24px;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(76,141,245,.3);transition:all .15s;margin-top:16px;}
+.save-btn:hover{background:#3a7ae4;}
+
+/* API ключи */
+.api-key-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;}
+.api-key-code{font-family:monospace;font-size:12px;color:#4a5568;flex:1;background:#f0f2f6;padding:4px 8px;border-radius:4px;}
+.key-copy-btn{background:none;border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:13px;cursor:pointer;color:var(--muted);}
+.key-copy-btn:hover{background:#ebf4ff;color:var(--acc);}
+.api-key-date{font-size:11px;color:var(--muted);white-space:nowrap;}
+.create-key-btn{padding:7px 16px;background:#f0f2f6;border:1px solid var(--border);border-radius:7px;font-size:12px;font-weight:600;color:#4a5568;cursor:pointer;margin-top:12px;}
+.create-key-btn:hover{background:var(--border);}
+
 /* История */
 .hist-item{display:flex;align-items:center;gap:14px;padding:13px 16px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:13px;}
 .hist-date{font-size:11px;color:var(--muted);min-width:140px;flex-shrink:0;}
@@ -183,15 +213,52 @@ tbody td{padding:9px 14px;color:var(--text);}
 .hist-del{background:none;border:none;color:#a0aec0;cursor:pointer;font-size:15px;padding:0 4px;flex-shrink:0;margin-left:4px;}
 .hist-del:hover{color:var(--red);}
 .empty-hint{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;}
+
+/* Модалка создания компании */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:#fff;border-radius:12px;padding:28px;width:380px;box-shadow:0 8px 32px rgba(0,0,0,.2);}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:6px;}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px;}
+.modal-input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px;}
+.modal-input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(76,141,245,.1);}
+.modal-btn{width:100%;padding:10px;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;}
+.modal-btn:hover{background:#3a7ae4;}
 </style>
 </head>
 <body>
 
+<!-- Модалка создания компании -->
+<div class="modal-overlay" id="company-modal">
+  <div class="modal">
+    <div class="modal-title">Добавить юрлицо</div>
+    <div class="modal-sub">Введите название организации. Whitelist и настройки бустеров будут созданы автоматически.</div>
+    <input class="modal-input" id="new-company-name" placeholder="Например: ООО Ромашка"
+      onkeydown="if(event.key==='Enter') createCompanyFromModal()">
+    <button class="modal-btn" onclick="createCompanyFromModal()">Создать</button>
+  </div>
+</div>
+
 <aside class="sidebar">
   <div class="sb-brand">
-    <div class="sb-logo">1С</div>
-    <div><div class="sb-name">Аудитор</div><div class="sb-sub">ИнфоТэк · ML-модуль</div></div>
+    <div class="sb-brand-row">
+      <div class="sb-logo">1С</div>
+      <div><div class="sb-name">Аудитор</div><div class="sb-sub">ИнфоТэк · ML-модуль</div></div>
+    </div>
   </div>
+
+  <!-- Селект юрлица -->
+  <div class="sb-company">
+    <div class="sb-company-label">Юрлицо</div>
+    <div class="company-select-wrap">
+      <select id="company-select" onchange="onCompanyChange(this)"></select>
+    </div>
+    <div class="sb-company-actions">
+      <button class="sb-company-btn" onclick="showCompanyModal()">+ Новое</button>
+      <button class="sb-company-btn danger" onclick="deleteCurrentCompany()">Удалить</button>
+    </div>
+  </div>
+
   <div class="sb-sec">Меню</div>
   <div class="sb-item active" onclick="showPage('analyze',this)">
     <span class="sb-item-icon">🔍</span><span class="sb-item-label">Анализ аномалий</span>
@@ -202,7 +269,10 @@ tbody td{padding:9px 14px;color:var(--text);}
   </div>
   <div class="sb-item" onclick="showPage('history',this)">
     <span class="sb-item-icon">📊</span><span class="sb-item-label">История отчётов</span>
-    <div class="tip-wrap"><button class="tip-btn">?</button><div class="tip-text">Журнал всех запусков. Журнал запусков. Проводки обрабатываются локально и не сохраняются.</div></div>
+    <div class="tip-wrap"><button class="tip-btn">?</button><div class="tip-text">Журнал запусков. Проводки обрабатываются локально и не сохраняются.</div></div>
+  </div>
+  <div class="sb-item" onclick="showPage('settings',this)">
+    <span class="sb-item-icon">⚙️</span><span class="sb-item-label">Настройки</span>
   </div>
   <div class="sb-divider"></div>
   <div class="sb-footer">🔒 Все данные обрабатываются локально<br>Версия 1.0.0 · © ИнфоТэк, 2026</div>
@@ -217,31 +287,27 @@ tbody td{padding:9px 14px;color:var(--text);}
       <div class="top-sub">Загрузите выгрузку из 1С:Бухгалтерия и получите отчёт с подозрительными операциями</div>
     </div>
 
-    <!-- Параметры -->
     <div class="card">
       <div class="card-title">⚙️ Параметры анализа</div>
       <div class="params-row">
-
         <div class="param-block">
           <div class="param-label">
             Минимальный порог риска
-            <div class="tip-wrap"><button class="tip-btn">?</button><div class="tip-text">Фильтрует все аномалии — отображаются только те, чей риск выше порога. Влияет на максимум «топа».</div></div>
+            <div class="tip-wrap"><button class="tip-btn">?</button><div class="tip-text">Фильтрует все аномалии — отображаются только те чей риск выше порога.</div></div>
           </div>
           <div class="param-value-row">
             <span class="param-big" id="minRiskVal">80</span>
             <span class="param-hint">из 100</span>
           </div>
-          <input type="range" id="minRisk" min="0" max="100" value="80" step="5" oninput="onMinRiskChange(this.value)">
+          <input type="range" id="minRisk" min="0" max="100" value="80" step="1" oninput="onMinRiskChange(this.value)">
           <div class="range-minmax"><span>0</span><span>100</span></div>
           <div class="avail-hint" id="avail-hint">Запустите анализ</div>
         </div>
-
         <div class="param-divider"></div>
-
         <div class="param-block">
           <div class="param-label">
             Показать топ аномалий
-            <div class="tip-wrap"><button class="tip-btn">?</button><div class="tip-text">Сколько аномалий показывать из отфильтрованных. Максимум = количество аномалий выше порога риска.</div></div>
+            <div class="tip-wrap"><button class="tip-btn">?</button><div class="tip-text">Сколько аномалий показывать. Максимум = количество выше порога риска.</div></div>
           </div>
           <div class="param-value-row">
             <span class="param-big" id="topNVal">35</span>
@@ -251,28 +317,22 @@ tbody td{padding:9px 14px;color:var(--text);}
           <div class="range-minmax"><span>1</span><span id="topN-max-label">—</span></div>
           <div class="frozen-label" id="frozen-label" style="display:none;">Показаны все аномалии</div>
         </div>
-
         <button class="all-btn" id="allBtn" onclick="toggleAll()">Все аномалии</button>
       </div>
     </div>
 
-    <!-- Загрузка -->
     <div class="card">
       <div class="card-title">📂 Журнал проводок</div>
-
       <div id="file-info" class="file-info" style="display:none;">
         <span style="font-size:22px;">📄</span>
         <div><div class="file-name" id="file-name-text"></div><div class="file-size" id="file-size-text"></div></div>
         <button class="file-remove" onclick="removeFile()">✕</button>
       </div>
-
-      <!-- Валидация колонок -->
       <div id="col-validation" class="col-validation" style="display:none;">
         <div class="col-val-title">📋 Проверка обязательных колонок</div>
         <div class="col-val-grid" id="col-chips"></div>
         <div class="col-val-msg" id="col-val-msg"></div>
       </div>
-
       <div id="drop-zone" class="drop-zone"
         ondragover="event.preventDefault();this.classList.add('drag-over')"
         ondragleave="this.classList.remove('drag-over')"
@@ -283,7 +343,6 @@ tbody td{padding:9px 14px;color:var(--text);}
         <button class="drop-btn" onclick="document.getElementById('file-input').click()">Выбрать файл</button>
         <input type="file" id="file-input" accept=".csv,.xlsx,.xls" onchange="handleFile(this.files[0])">
       </div>
-
       <div class="action-row">
         <button class="analyze-btn" id="analyze-btn" onclick="runAnalysis()" disabled>🔍 Запустить анализ</button>
         <div class="loader" id="loader"><div class="spinner"></div><span>Анализируем проводки...</span></div>
@@ -292,7 +351,6 @@ tbody td{padding:9px 14px;color:var(--text);}
       <div class="error-bar" id="error-bar"></div>
     </div>
 
-    <!-- Результаты -->
     <div class="results-section" id="results">
       <div class="metrics">
         <div class="metric"><div class="metric-num" id="m-total">—</div><div class="metric-label">Показано аномалий</div></div>
@@ -384,6 +442,37 @@ tbody td{padding:9px 14px;color:var(--text);}
     <div class="card">
       <div class="card-title">Запуски анализа</div>
       <div id="hist-list"><div class="empty-hint">Загрузка...</div></div>
+    </div>
+  </div>
+
+  <!-- Настройки -->
+  <div class="page" id="page-settings">
+    <div class="top-bar">
+      <div class="top-title">⚙️ Настройки</div>
+      <div class="top-sub">Бустеры риска и API ключи для текущего юрлица</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        📈 Бустеры риска (установлены оптимальные значения по умолчанию, менять при необходимости)
+        <div class="tip-wrap" style="margin-left:4px;">
+          <button class="tip-btn">?</button>
+          <div class="tip-text">Множитель риска при наличии признака. Берётся максимальный из сработавших. 1.0 = бустер отключён.</div>
+        </div>
+      </div>
+      <div id="boosters-form"></div>
+      <button class="save-btn" id="save-boosters-btn" onclick="saveBoosters()">Сохранить</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="justify-content:space-between;align-items:center;">
+        <span>🔑 API ключи</span>
+        <button class="create-key-btn" onclick="createApiKey()">+ Создать ключ</button>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">
+        Используйте ключ для подключения из 1С: заголовок <code style="background:#f0f2f6;padding:2px 6px;border-radius:4px;">X-Api-Key: &lt;ключ&gt;</code> в POST запросе на <code style="background:#f0f2f6;padding:2px 6px;border-radius:4px;">/api/analyze/</code>
+      </div>
+      <div id="api-keys-list"></div>
     </div>
   </div>
 

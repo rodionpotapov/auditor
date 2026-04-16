@@ -14,11 +14,11 @@ function acFilter(input, dropId, list) {
   drop.innerHTML = matches.length
     ? matches.map(m => {
         const safe = m.replace(/'/g, "\\'");
-        const highlighted = m.replace(
+        const hl   = m.replace(
           new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
           s => `<b>${s}</b>`
         );
-        return `<div class="ac-item" onmousedown="acSelect('${input.id}','${dropId}','${safe}')">${highlighted}</div>`;
+        return `<div class="ac-item" onmousedown="acSelect('${input.id}','${dropId}','${safe}')">${hl}</div>`;
       }).join('')
     : '<div class="ac-empty">Не найдено — введите своё значение</div>';
 
@@ -37,66 +37,43 @@ function acHide(dropId) {
 // ── Валидация колонок ──
 
 async function validateColumns(file) {
-  const valPanel = document.getElementById('col-validation');
-  const chips    = document.getElementById('col-chips');
-  const msg      = document.getElementById('col-val-msg');
-
-  valPanel.style.display = 'block';
-
-  // CSV с кодировкой cp1251 нельзя надёжно прочитать в браузере
   if (file.name.toLowerCase().endsWith('.csv')) {
-    chips.innerHTML = REQUIRED_COLS.map(c =>
-      `<span class="col-chip warn">? ${c}</span>`
-    ).join('');
-    msg.textContent = 'CSV-файл — проверка колонок выполнится на сервере';
-    msg.className   = 'col-val-msg';
-    msg.style.color = 'var(--orange)';
     document.getElementById('analyze-btn').disabled = false;
     return true;
   }
 
-  chips.innerHTML = '<span style="font-size:12px;color:var(--muted);">Читаем файл...</span>';
-  msg.textContent = '';
-
   try {
-    const buf = await file.arrayBuffer();
-    const wb  = XLSX.read(buf, { type: 'array', sheetRows: 2 });
-    const ws  = wb.Sheets[wb.SheetNames[0]];
+    const buf   = await file.arrayBuffer();
+    const wb    = XLSX.read(buf, { type: 'array', sheetRows: 2 });
+    const ws    = wb.Sheets[wb.SheetNames[0]];
     const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:A1');
-
     const headers = [];
     for (let c = range.s.c; c <= range.e.c; c++) {
       const cell = ws[XLSX.utils.encode_cell({ r: 0, c })];
       if (cell && cell.v) headers.push(String(cell.v).trim());
     }
 
-    const missing = [];
-    let allOk = true;
+    const missing = REQUIRED_COLS.filter(col => !headers.includes(col));
 
-    chips.innerHTML = REQUIRED_COLS.map(col => {
-      const found = headers.includes(col);
-      if (!found) { allOk = false; missing.push(col); }
-      return `<span class="col-chip ${found ? 'ok' : 'err'}">${found ? '✓' : '✗'} ${col}</span>`;
-    }).join('');
-
-    if (allOk) {
-      msg.textContent = '✓ Все обязательные колонки найдены';
-      msg.className   = 'col-val-msg ok';
-      document.getElementById('analyze-btn').disabled = false;
-      return true;
-    } else {
+    if (missing.length > 0) {
+      const valPanel = document.getElementById('col-validation');
+      const chips    = document.getElementById('col-chips');
+      const msg      = document.getElementById('col-val-msg');
+      valPanel.style.display = 'block';
+      chips.innerHTML = REQUIRED_COLS.map(col => {
+        const found = headers.includes(col);
+        return `<span class="col-chip ${found ? 'ok' : 'err'}">${found ? '✓' : '✗'} ${col}</span>`;
+      }).join('');
       msg.textContent = `✗ Отсутствуют: ${missing.join(', ')}. Анализ невозможен.`;
       msg.className   = 'col-val-msg';
       document.getElementById('analyze-btn').disabled = true;
       return false;
     }
 
+    document.getElementById('analyze-btn').disabled = false;
+    return true;
+
   } catch (e) {
-    chips.innerHTML = REQUIRED_COLS.map(c =>
-      `<span class="col-chip warn">? ${c}</span>`
-    ).join('');
-    msg.textContent = 'Не удалось проверить колонки — проверка выполнится на сервере';
-    msg.style.color = 'var(--orange)';
     document.getElementById('analyze-btn').disabled = false;
     return true;
   }
@@ -120,9 +97,7 @@ function renderTable(rows) {
     const cells = cols.map(c => {
       if (c === 'Риск (0-100)') return `<td><span class="risk-badge ${cls}">${risk}</span></td>`;
       let val = row[c] || '';
-      if (c === 'Дата' && val) {
-        try { val = new Date(val).toLocaleString('ru'); } catch (e) {}
-      }
+      if (c === 'Дата' && val) { try { val = new Date(val).toLocaleString('ru'); } catch (e) {} }
       if ((c === 'Сумма' || c === 'Средняя сумма по паре') && val !== '') {
         val = Number(val).toLocaleString('ru');
       }
@@ -130,9 +105,9 @@ function renderTable(rows) {
     });
 
     const dt  = (row['Тип документа'] || '').replace(/'/g, "\\'");
-    const ddt = (row['Счет Дт'] || '');
-    const kkt = (row['Счет Кт'] || '');
-    cells.push(`<td><button class="wl-btn" id="wlb-${idx}" 
+    const ddt = row['Счет Дт'] || '';
+    const kkt = row['Счет Кт'] || '';
+    cells.push(`<td><button class="wl-btn" id="wlb-${idx}"
       onclick="addToWhitelist(this,'${dt}','${ddt}','${kkt}')">В whitelist</button></td>`);
 
     return `<tr>${cells.join('')}</tr>`;
@@ -140,15 +115,11 @@ function renderTable(rows) {
 }
 
 function updateMetrics(rows) {
-  const total = rows.length;
-  const high  = rows.filter(r => r['Риск (0-100)'] >= 80).length;
-  const med   = rows.filter(r => r['Риск (0-100)'] >= 60 && r['Риск (0-100)'] < 80).length;
-  const maxR  = rows.length ? Math.max(...rows.map(r => r['Риск (0-100)'] || 0)) : 0;
-
-  document.getElementById('m-total').textContent = total;
-  document.getElementById('m-high').textContent  = high;
-  document.getElementById('m-med').textContent   = med;
-  document.getElementById('m-max').textContent   = maxR.toFixed(0);
+  document.getElementById('m-total').textContent = rows.length;
+  document.getElementById('m-high').textContent  = rows.filter(r => r['Риск (0-100)'] >= 80).length;
+  document.getElementById('m-med').textContent   = rows.filter(r => r['Риск (0-100)'] >= 60 && r['Риск (0-100)'] < 80).length;
+  document.getElementById('m-max').textContent   = rows.length
+    ? Math.max(...rows.map(r => r['Риск (0-100)'] || 0)).toFixed(0) : '—';
 }
 
 // ── Whitelist рендер ──
@@ -162,16 +133,16 @@ function renderWhitelist(rules) {
     return;
   }
 
-  list.innerHTML = rules.map((r, i) => {
-    const isDoc  = r.type === 'doc_type';
-    const badge  = isDoc
+  list.innerHTML = rules.map(r => {
+    const isDoc = r.type === 'doc_type';
+    const badge = isDoc
       ? `<span class="wl-badge doc">Тип документа</span>`
       : `<span class="wl-badge pair">Пара счетов</span>`;
-    const text   = isDoc
+    const text = isDoc
       ? `<div class="wl-rule-text">${r.doc_type}</div>`
       : `<div class="wl-rule-text">${r.account_pair.replace('_', '→')}<div class="wl-rule-sub">${r.doc_type}</div></div>`;
     return `<div class="wl-rule">${badge}${text}
-      <button class="wl-del" onclick="deleteWlRule(${i})" title="Удалить">✕</button>
+      <button class="wl-del" onclick="deleteWlRule(${r.id})" title="Удалить">✕</button>
     </div>`;
   }).join('');
 }
@@ -180,19 +151,77 @@ function renderWhitelist(rules) {
 
 function renderHistory(runs) {
   const list = document.getElementById('hist-list');
-
   if (!runs.length) {
     list.innerHTML = '<div class="empty-hint">История пуста. Запустите анализ чтобы появилась первая запись.</div>';
     return;
   }
-
-  list.innerHTML = [...runs].reverse().map((r, i) => `
-    <div class="hist-item" id="hist-${i}">
+  list.innerHTML = runs.map(r => `
+    <div class="hist-item">
       <div class="hist-date">${new Date(r.timestamp).toLocaleString('ru')}</div>
       <div class="hist-file">📄 ${r.filename}</div>
       ${r.dataset_rows ? `<div class="hist-rows">${r.dataset_rows.toLocaleString('ru')} строк</div>` : ''}
       <span class="hist-count">${r.total} аномалий</span>
       <span class="hist-high">${r.high_risk} высокий риск</span>
-      <button class="hist-del" onclick="deleteHistRun(${i})" title="Удалить запись">✕</button>
+      <button class="hist-del" onclick="deleteHistRun(${r.id})" title="Удалить">✕</button>
     </div>`).join('');
+}
+
+// ── Бустеры рендер ──
+// function renderBoosters(b) {
+//   const fields = [
+//     { key: 'boost_manual',          label: 'Ручная проводка',               tip: 'Коэффициент для ручных проводок (is_manual=1)' },
+//     { key: 'boost_amount_outlier',  label: 'Крупная сумма',                 tip: 'Сумма выбивается из нормы для данной пары счетов' },
+//     { key: 'boost_night',           label: 'Нерабочее время',               tip: 'Операция сделана ночью или в выходной' },
+//     { key: 'boost_first_operation', label: 'Первая операция с контрагентом', tip: 'Контрагент встречается впервые' },
+//     { key: 'boost_suspicious_pair', label: 'Подозрительная пара счетов',    tip: 'Пара из списка заведомо проблемных' },
+//   ];
+
+//   document.getElementById('boosters-form').innerHTML = fields.map(f => `
+//     <div class="booster-row">
+//       <div class="booster-label">
+//         ${f.label}
+//         <div class="tip-wrap"><button class="tip-btn">?</button><div class="tip-text">${f.tip}</div></div>
+//       </div>
+//       <div class="booster-val-row">
+//         <span class="booster-val" id="bval-${f.key}">×${(b[f.key] || 1).toFixed(1)}</span>
+//         <input type="range" class="booster-slider" id="bslider-${f.key}"
+//           min="1.0" max="3.0" step="0.1" value="${b[f.key] || 1.0}"
+//           oninput="document.getElementById('bval-${f.key}').textContent='×'+parseFloat(this.value).toFixed(1)">
+//         <div class="booster-minmax"><span>×1.0</span><span>×3.0</span></div>
+//       </div>
+//     </div>`).join('');
+// }
+
+// ── Компании рендер ──
+
+
+function renderBoosters(b) {
+  const fields = [
+    { key: 'boost_manual',          label: 'Ручная проводка',               max: 1.7, tip: 'Коэффициент для ручных проводок (is_manual=1)' },
+    { key: 'boost_suspicious_pair', label: 'Подозрительная пара счетов',    max: 1.7, tip: 'Пара из списка заведомо проблемных' },
+    { key: 'boost_amount_outlier',  label: 'Крупная сумма',                 max: 1.4, tip: 'Сумма выбивается из нормы для данной пары счетов' },
+    { key: 'boost_night',           label: 'Нерабочее время',               max: 1.4, tip: 'Операция сделана ночью или в выходной' },
+    { key: 'boost_first_operation', label: 'Первая операция с контрагентом', max: 1.3, tip: 'Контрагент встречается впервые' },
+  ];
+
+  document.getElementById('boosters-form').innerHTML = fields.map(f => `
+    <div class="booster-row">
+      <div class="booster-label">
+        ${f.label}
+        <div class="tip-wrap"><button class="tip-btn">?</button><div class="tip-text">${f.tip}</div></div>
+      </div>
+      <div class="booster-val-row">
+        <input type="range" class="booster-slider" id="bslider-${f.key}"
+          min="1.0" max="${f.max}" step="0.05" value="${b[f.key] || 1.0}">
+        <div class="booster-minmax" style="display: flex; justify-content: space-between; width: 100%; font-size: 12px; color: gray; margin-top: 4px;"><span>Стандарт.</span>\t\t-->\t\t<span>Макс.</span></div>
+      </div>
+    </div>`).join('');
+}
+
+
+function renderCompanySelector(companies, currentId) {
+  const sel = document.getElementById('company-select');
+  sel.innerHTML = companies.map(c =>
+    `<option value="${c.id}" ${c.id === currentId ? 'selected' : ''}>${c.name}</option>`
+  ).join('');
 }
