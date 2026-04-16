@@ -1,7 +1,6 @@
 import io
 import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment
-from openpyxl.worksheet.datavalidation import DataValidation
 import pandas as pd
 from src.config import MIN_AMOUNT, REPORT_TOP_N
 
@@ -55,27 +54,9 @@ def generate_report(data: pd.DataFrame) -> bytes:
             for cell in row:
                 cell.fill = yellow_fill
 
-    # Колонки для разметки бухгалтером
-    ws.cell(row=1, column=11, value="Оценка").fill = header_fill
-    ws.cell(row=1, column=11).font = header_font
-    ws.cell(row=1, column=12, value="Комментарий").fill = header_fill
-    ws.cell(row=1, column=12).font = header_font
-
-    dv = DataValidation(
-        type="list",
-        formula1='"Ошибка,Норма,Непонятно"',
-        allow_blank=True,
-        showDropDown=False,
-    )
-    ws.add_data_validation(dv)
-    dv.sqref = f"K2:K{ws.max_row}"
-
     for col in ws.columns:
         max_length = max(len(str(cell.value or "")) for cell in col)
         ws.column_dimensions[col[0].column_letter].width = min(max_length + 2, 50)
-
-    ws.column_dimensions["K"].width = 15
-    ws.column_dimensions["L"].width = 40
 
     # Сохраняем обратно в BytesIO и возвращаем байты
     output = io.BytesIO()
