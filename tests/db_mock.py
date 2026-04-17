@@ -123,7 +123,7 @@ sys.modules['src.build_features'] = _bf
 
 # src.model
 _ml = types.ModuleType('src.model')
-def _train_and_score(df, X):
+def _train_and_score(df, X, lof_n_neighbors=50):
     df = df.copy()
     df["ensemble_score"] = np.random.uniform(0, 0.3, len(df))
     return df

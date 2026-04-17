@@ -6,7 +6,7 @@ from src.models import Company, ApiKey, WhitelistRule, BoosterSettings, Analysis
 from src.config import (
     BOOST_MANUAL, BOOST_AMOUNT_OUTLIER, BOOST_NIGHT,
     BOOST_FIRST_OPERATION, BOOST_SUSPICIOUS_PAIR,
-    WHITELIST_DOC_TYPES, WHITELIST_PAIRS,
+    WHITELIST_DOC_TYPES, WHITELIST_PAIRS, LOF_N_NEIGHBORS
 )
 
 
@@ -35,6 +35,7 @@ def create_company(db: Session, name: str) -> Company:
         boost_night=BOOST_NIGHT,
         boost_first_operation=BOOST_FIRST_OPERATION,
         boost_suspicious_pair=BOOST_SUSPICIOUS_PAIR,
+        lof_n_neighbors=LOF_N_NEIGHBORS,
     )
     db.add(boosters)
 
@@ -132,7 +133,7 @@ def update_boosters(db: Session, company_id: int, **kwargs) -> BoosterSettings:
         boosters = BoosterSettings(company_id=company_id)
         db.add(boosters)
 
-    allowed = {"boost_manual", "boost_amount_outlier", "boost_night", "boost_first_operation", "boost_suspicious_pair"}
+    allowed = {"boost_manual", "boost_amount_outlier", "boost_night", "boost_first_operation", "boost_suspicious_pair", "lof_n_neighbors"}
     for key, val in kwargs.items():
         if key in allowed:
             setattr(boosters, key, float(val))

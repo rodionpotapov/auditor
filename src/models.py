@@ -63,6 +63,7 @@ class BoosterSettings(Base):
     boost_night:            Mapped[float] = mapped_column(Float, default=1.3)
     boost_first_operation:  Mapped[float] = mapped_column(Float, default=1.2)
     boost_suspicious_pair:  Mapped[float] = mapped_column(Float, default=1.5)
+    lof_n_neighbors: Mapped[int] = mapped_column(Integer, default=50)
 
     company: Mapped["Company"] = relationship(back_populates="booster_settings")
 

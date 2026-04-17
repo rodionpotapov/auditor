@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 from src.config import IF_CONTAMINATION, IF_N_ESTIMATORS, LOF_N_NEIGHBORS, LOF_CONTAMINATION, RANDOM_STATE
 
 
-def train_and_score(data: pd.DataFrame, X: pd.DataFrame) -> pd.DataFrame:
+def train_and_score(data: pd.DataFrame, X: pd.DataFrame, lof_n_neighbors: int = LOF_N_NEIGHBORS) -> pd.DataFrame:
     """Обучает IF + LOF на матрице фичей, добавляет скоры в датафрейм."""
 
     model_forest = IsolationForest(
@@ -18,9 +18,10 @@ def train_and_score(data: pd.DataFrame, X: pd.DataFrame) -> pd.DataFrame:
     )
 
     model_lof = LocalOutlierFactor(
-        n_neighbors=LOF_N_NEIGHBORS,
+        n_neighbors=lof_n_neighbors,
         contamination=LOF_CONTAMINATION,
         novelty=False,
+        n_jobs=-1
     )
 
     # IF — fit отдельно, скоры отдельно

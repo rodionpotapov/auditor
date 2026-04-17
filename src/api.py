@@ -1,8 +1,6 @@
-# src/api.py
-
 import json
 from pathlib import Path
-
+from datetime import datetime
 from fastapi import FastAPI, File, UploadFile, Depends, HTTPException, Header
 from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
@@ -18,7 +16,7 @@ from src.build_features import build_features
 from src.model import train_and_score
 from src.scoring import score as apply_score
 from src.report_generator import generate_report
-from src.config import MIN_AMOUNT, DOC_TYPES_AUTOCOMPLETE, ACCOUNTS_AUTOCOMPLETE
+from src.config import MIN_AMOUNT, DOC_TYPES_AUTOCOMPLETE, ACCOUNTS_AUTOCOMPLETE, REPORT_TOP_N
 
 # Создаём таблицы при старте если не существуют
 Base.metadata.create_all(bind=engine)
@@ -105,9 +103,9 @@ async def analyze(
     data = load_data(file.file)
     data = clean_data(data)
     data, X = build_features(data)
-    data = train_and_score(data, X)
-
     boosters = crud.get_boosters(db, company_id)
+    data = train_and_score(data, X, boosters.lof_n_neighbors if boosters else 50)
+
     whitelist = crud.get_whitelist(db, company_id)
     data = apply_score(data, boosters=boosters, whitelist_rules=whitelist)
 
@@ -135,6 +133,56 @@ async def analyze_external(
     db: Session = Depends(get_db),
 ):
     return await analyze(company.id, file, db)
+
+
+@app.post("/api/analyze/json/")
+async def analyze_external_json(
+    file: UploadFile = File(...),
+    company=Depends(get_company_from_key),
+    db: Session = Depends(get_db),
+):
+    data = load_data(file.file)
+    data = clean_data(data)
+    data, X = build_features(data)
+    boosters = crud.get_boosters(db, company.id)
+    data = train_and_score(data, X, boosters.lof_n_neighbors if boosters else 50)
+
+    whitelist = crud.get_whitelist(db, company.id)
+    data = apply_score(data, boosters=boosters, whitelist_rules=whitelist)
+
+    report_df = (
+        data[data["abs_amount"] >= MIN_AMOUNT]
+        .query("boosted_score > 0")
+        .nlargest(REPORT_TOP_N, "boosted_score")
+    )
+
+    anomalies = [
+        {
+            "date":        str(row.get("period", "")),
+            "account_dt":  row.get("СчетДт", ""),
+            "account_kt":  row.get("СчетКт", ""),
+            "amount":      float(row.get("abs_amount", 0)),
+            "contractor":  row.get("Контрагент", ""),
+            "doc_type":    row.get("ТипДокумента", ""),
+            "risk_score":  float(row.get("boosted_score", 0)),
+            "reason":      row.get("explanation", ""),
+        }
+        for row in report_df.to_dict(orient="records")
+    ]
+
+    total     = len(anomalies)
+    high_risk = sum(1 for a in anomalies if a["risk_score"] >= 80)
+
+    crud.add_history(db, company.id, file.filename, len(data), total, high_risk)
+
+    return {
+        "company":        company.name,
+        "analyzed_at":    datetime.now().isoformat(),
+        "total_rows":     len(data),
+        "anomalies_found": total,
+        "high_risk":      high_risk,
+        "anomalies":      anomalies,
+    }
 
 
 # ── Whitelist ──
@@ -197,6 +245,7 @@ class BoostersBody(BaseModel):
     boost_night: float = 1.3
     boost_first_operation: float = 1.2
     boost_suspicious_pair: float = 1.5
+    lof_n_neighbors: int = 50
 
 @app.get("/companies/{company_id}/boosters/")
 def get_boosters(company_id: int, db: Session = Depends(get_db)):
@@ -209,6 +258,7 @@ def get_boosters(company_id: int, db: Session = Depends(get_db)):
         "boost_night": b.boost_night,
         "boost_first_operation": b.boost_first_operation,
         "boost_suspicious_pair": b.boost_suspicious_pair,
+        "lof_n_neighbors": b.lof_n_neighbors,
     }
 
 @app.put("/companies/{company_id}/boosters/")

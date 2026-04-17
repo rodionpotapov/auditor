@@ -63,11 +63,12 @@ async function apiGetWhitelist(companyId) {
 }
 
 async function apiAddWhitelistRule(companyId, rule) {
-  await fetch(`${API}/companies/${companyId}/whitelist/`, {
+  const resp = await fetch(`${API}/companies/${companyId}/whitelist/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(rule),
   });
+  return await resp.json();
 }
 
 async function apiDeleteWhitelistRule(ruleId) {

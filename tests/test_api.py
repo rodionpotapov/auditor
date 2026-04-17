@@ -190,6 +190,22 @@ class TestBoostersEndpoints:
         assert client.get("/companies/99999/boosters/").status_code == 404
 
 
+    def test_lof_n_neighbors_in_response(self):
+        c = _company()
+        r = client.get(f"/companies/{c['id']}/boosters/")
+        assert "lof_n_neighbors" in r.json()
+        assert r.json()["lof_n_neighbors"] == 50
+
+    def test_lof_n_neighbors_update(self):
+        c = _company()
+        client.put(f"/companies/{c['id']}/boosters/", json={
+            "boost_manual": 1.5, "boost_amount_outlier": 1.3,
+            "boost_night": 1.3, "boost_first_operation": 1.2,
+            "boost_suspicious_pair": 1.5, "lof_n_neighbors": 20,
+        })
+        assert client.get(f"/companies/{c['id']}/boosters/").json()["lof_n_neighbors"] == 20
+
+
 # ── История ──
 
 class TestHistoryEndpoints:
