@@ -97,9 +97,15 @@ function renderTable(rows) {
     const cells = cols.map(c => {
       if (c === 'Риск (0-100)') return `<td><span class="risk-badge ${cls}">${risk}</span></td>`;
       let val = row[c] || '';
-      if (c === 'Дата' && val) { try { val = new Date(val).toLocaleString('ru'); } catch (e) {} }
-      if ((c === 'Сумма' || c === 'Средняя сумма по паре') && val !== '') {
-        val = Number(val).toLocaleString('ru');
+      if (typeof val === 'number') {
+        const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+        val = isNaN(d) ? val : d.toLocaleDateString('ru') + ' ' + d.toLocaleTimeString('ru', {hour:'2-digit',minute:'2-digit'});
+      } else {
+        val = String(val);
+      }
+      if ((c === 'Сумма' || c === 'Средняя сумма по паре') && val !== '' && val != null) {
+        const n = Number(val);
+        val = isNaN(n) ? val : n.toLocaleString('ru');
       }
       return `<td>${val}</td>`;
     });
@@ -165,33 +171,6 @@ function renderHistory(runs) {
       <button class="hist-del" onclick="deleteHistRun(${r.id})" title="Удалить">✕</button>
     </div>`).join('');
 }
-
-// ── Бустеры рендер ──
-// function renderBoosters(b) {
-//   const fields = [
-//     { key: 'boost_manual',          label: 'Ручная проводка',               tip: 'Коэффициент для ручных проводок (is_manual=1)' },
-//     { key: 'boost_amount_outlier',  label: 'Крупная сумма',                 tip: 'Сумма выбивается из нормы для данной пары счетов' },
-//     { key: 'boost_night',           label: 'Нерабочее время',               tip: 'Операция сделана ночью или в выходной' },
-//     { key: 'boost_first_operation', label: 'Первая операция с контрагентом', tip: 'Контрагент встречается впервые' },
-//     { key: 'boost_suspicious_pair', label: 'Подозрительная пара счетов',    tip: 'Пара из списка заведомо проблемных' },
-//   ];
-
-//   document.getElementById('boosters-form').innerHTML = fields.map(f => `
-//     <div class="booster-row">
-//       <div class="booster-label">
-//         ${f.label}
-//         <div class="tip-wrap"><button class="tip-btn">?</button><div class="tip-text">${f.tip}</div></div>
-//       </div>
-//       <div class="booster-val-row">
-//         <span class="booster-val" id="bval-${f.key}">×${(b[f.key] || 1).toFixed(1)}</span>
-//         <input type="range" class="booster-slider" id="bslider-${f.key}"
-//           min="1.0" max="3.0" step="0.1" value="${b[f.key] || 1.0}"
-//           oninput="document.getElementById('bval-${f.key}').textContent='×'+parseFloat(this.value).toFixed(1)">
-//         <div class="booster-minmax"><span>×1.0</span><span>×3.0</span></div>
-//       </div>
-//     </div>`).join('');
-// }
-
 // ── Компании рендер ──
 
 
@@ -202,6 +181,7 @@ function renderBoosters(b) {
     { key: 'boost_amount_outlier',  label: 'Крупная сумма',                 max: 1.4, tip: 'Сумма выбивается из нормы для данной пары счетов' },
     { key: 'boost_night',           label: 'Нерабочее время',               max: 1.4, tip: 'Операция сделана ночью или в выходной' },
     { key: 'boost_first_operation', label: 'Первая операция с контрагентом', max: 1.3, tip: 'Контрагент встречается впервые' },
+    { key: 'lof_n_neighbors', label: 'Чувствительность модели', min: 5, max: 100, step: 5, tip: 'Больше значение — строже. Меньше — мягче. По умолчанию: 50' },
   ];
 
   document.getElementById('boosters-form').innerHTML = fields.map(f => `
@@ -212,8 +192,8 @@ function renderBoosters(b) {
       </div>
       <div class="booster-val-row">
         <input type="range" class="booster-slider" id="bslider-${f.key}"
-          min="1.0" max="${f.max}" step="0.05" value="${b[f.key] || 1.0}">
-        <div class="booster-minmax" style="display: flex; justify-content: space-between; width: 100%; font-size: 12px; color: gray; margin-top: 4px;"><span>Стандарт.</span>\t\t-->\t\t<span>Макс.</span></div>
+          min="${f.min ?? 1.0}" max="${f.max}" step="${f.step ?? 0.05}" value="${b[f.key] || (f.min ?? 1.0)}">
+        <div class="booster-minmax" style="display: flex; justify-content: space-between; width: 100%; font-size: 12px; color: gray; margin-top: 4px;"><span>Стандарт.</span>		-->		<span>Макс.</span></div>
       </div>
     </div>`).join('');
 }

@@ -20,11 +20,14 @@ def generate_report(data: pd.DataFrame) -> bytes:
     )
 
     report_data.columns = [
-        "Дата", "Счет Дт", "Счет Кт", "Сумма", "Средняя сумма по паре",
-        "Контрагент", "Содержание", "Тип документа", "Риск (0-100)", "Причина"
-    ]
+    "Дата", "Счет Дт", "Счет Кт", "Сумма", "Средняя сумма по паре",
+    "Контрагент", "Содержание", "Тип документа", "Риск (0-100)", "Причина"
+]
+
+    report_data["Дата"] = pd.to_datetime(report_data["Дата"]).dt.strftime("%d.%m.%Y %H:%M")
     report_data["Риск (0-100)"] = report_data["Риск (0-100)"].round(1)
-    report_data["Средняя сумма по паре"] = report_data["Средняя сумма по паре"].round(2)
+    report_data["Сумма"] = report_data["Сумма"].round(2).astype(str)
+    report_data["Средняя сумма по паре"] = report_data["Средняя сумма по паре"].round(2).astype(str)
 
     # Пишем в BytesIO вместо файла на диск
     buffer = io.BytesIO()
@@ -46,6 +49,8 @@ def generate_report(data: pd.DataFrame) -> bytes:
         cell.alignment = Alignment(horizontal="center")
 
     for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+        row[3].number_format = '#,##0.00'
+        row[4].number_format = '#,##0.00'
         risk = row[8].value
         if risk and risk > 80:
             for cell in row:

@@ -13,7 +13,7 @@ def build_features(data: pd.DataFrame) -> tuple[pd.DataFrame, np.array]:
     data["day_of_week"] = data["Период"].dt.dayofweek
     data["month"] = data["Период"].dt.month
     data["is_weekend"] = data["day_of_week"].isin([5, 6]).astype(int)
-    data["is_night"] = ((data["hour"] >= 20) | (data["hour"] < 8)).astype(int)
+    data["is_night"] = ((data["hour"] >= 22) | (data["hour"] < 8)).astype(int)
     data["is_mounth_end"] = (data["Период"].dt.day >= 25).astype(int)
     data["is_quarter_end"] = (
         data["month"].isin([3, 6, 9, 12]) & (data["Период"].dt.day >= 25)

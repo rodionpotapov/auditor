@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-DATABASE_URL = (
+DATABASE_URL = os.getenv("DATABASE_URL") or (
     f"postgresql://"
     f"{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
     f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}"

@@ -23,7 +23,7 @@ def base_df():
         data={
             "Период": pd.to_datetime([
                 "2026-03-24 19:59:59", 
-                "2026-03-25 20:00:00", 
+                "2026-03-25 22:01:00", 
                 "2026-03-31 07:59:59", 
                 "2026-03-31 10:00:00"  
             ]),
@@ -67,7 +67,7 @@ def test_contractor_sequence(base_df):
     assert data.loc[0, "time_since_last_contractor"] == 999999.0
     
     assert data.loc[1, "is_first_operation"] == 0
-    assert abs(data.loc[1, "time_since_last_contractor"] - 24.0) < 0.1
+    assert abs(data.loc[1, "time_since_last_contractor"] - 26.0) < 0.1
 
 def test_matrix_structure_and_nans(base_df):
     data, X = build_features(data=base_df)

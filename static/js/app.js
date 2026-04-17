@@ -42,17 +42,11 @@ async function loadCompanies() {
 
 function onCompanyChange(sel) {
   currentCompanyId = parseInt(sel.value);
-  updateCompanyBadge(sel.options[sel.selectedIndex].text);
+  const name = sel.options[sel.selectedIndex].text;
+  updateCompanyBadge(name);
+  // Сбрасываем результаты при смене компании
   allRows = [];
   document.getElementById('results').classList.remove('show');
-  refreshCurrentPage();
-}
-
-function refreshCurrentPage() {
-  const pageId = document.querySelector('.page.active')?.id;
-  if (pageId === 'page-whitelist') loadWhitelist();
-  else if (pageId === 'page-history')   loadHistory();
-  else if (pageId === 'page-settings')  loadSettings();
 }
 
 function updateCompanyBadge(name) {
@@ -205,7 +199,7 @@ async function runAnalysis() {
 
   try {
     const bytes = await apiAnalyze(currentCompanyId, selectedFile);
-    const wb    = XLSX.read(bytes, { type: 'array' });
+    const wb = XLSX.read(bytes, { type: 'array', cellDates: false });
     const ws    = wb.Sheets[wb.SheetNames[0]];
     allRows     = XLSX.utils.sheet_to_json(ws, { defval: '' });
 
@@ -284,13 +278,26 @@ async function submitWlRule() {
 }
 
 async function addToWhitelist(btn, docType, acctDt, acctKt) {
-  if (!currentCompanyId || btn.classList.contains('added')) return;
+  if (!currentCompanyId) return;
+
+  if (btn.classList.contains('added')) {
+    const ruleId = btn.dataset.ruleId;
+    if (!ruleId) return;
+    await apiDeleteWhitelistRule(parseInt(ruleId));
+    btn.textContent = 'В whitelist';
+    btn.classList.remove('added', 'undo');
+    delete btn.dataset.ruleId;
+    return;
+  }
+
   const rule = acctDt && acctKt
     ? { type: 'pair', account_pair: acctDt + '_' + acctKt, doc_type: docType }
     : { type: 'doc_type', doc_type: docType };
-  await apiAddWhitelistRule(currentCompanyId, rule);
-  btn.textContent = '✓ Добавлено';
-  btn.classList.add('added');
+
+  const result = await apiAddWhitelistRule(currentCompanyId, rule);
+  btn.dataset.ruleId = result.id;
+  btn.textContent = '↩ Откатить';
+  btn.classList.add('added', 'undo');
 }
 
 async function deleteWlRule(ruleId) {
@@ -351,10 +358,12 @@ async function loadSettings() {
 
 async function saveBoosters() {
   if (!currentCompanyId) return;
-  const keys = ['boost_manual', 'boost_amount_outlier', 'boost_night', 'boost_first_operation', 'boost_suspicious_pair'];
+  const keys = ['boost_manual', 'boost_amount_outlier', 'boost_night', 'boost_first_operation', 'boost_suspicious_pair', 'lof_n_neighbors'];
   const boosters = {};
   keys.forEach(k => {
-    boosters[k] = parseFloat(document.getElementById('bslider-' + k).value);
+  boosters[k] = k === 'lof_n_neighbors'
+      ? parseInt(document.getElementById('bslider-' + k).value)
+      : parseFloat(document.getElementById('bslider-' + k).value);
   });
   await apiUpdateBoosters(currentCompanyId, boosters);
   const btn = document.getElementById('save-boosters-btn');
@@ -396,14 +405,4 @@ function copyKey(key) {
   navigator.clipboard.writeText(key).then(() => {
     alert('Ключ скопирован');
   });
-}
-
-async function deleteCurrentCompany() {
-  if (!currentCompanyId) return;
-  const name = document.getElementById('company-select')
-    .options[document.getElementById('company-select').selectedIndex].text;
-  if (!confirm(`Удалить «${name}» и все связанные данные?`)) return;
-  await apiDeleteCompany(currentCompanyId);
-  currentCompanyId = null;
-  await loadCompanies();
 }

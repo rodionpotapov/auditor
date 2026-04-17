@@ -199,6 +199,17 @@ class TestBoosters:
         crud.update_boosters(db, c1.id, boost_manual=1.7)
         assert crud.get_boosters(db, c2.id).boost_manual == _cfg.BOOST_MANUAL
 
+    def test_lof_n_neighbors_default(self, db):
+        c = crud.create_company(db, "ООО LOF")
+        b = crud.get_boosters(db, c.id)
+        assert b.lof_n_neighbors == 50
+
+    def test_lof_n_neighbors_update(self, db):
+        c = crud.create_company(db, "ООО LOF2")
+        crud.update_boosters(db, c.id, lof_n_neighbors=20)
+        b = crud.get_boosters(db, c.id)
+        assert b.lof_n_neighbors == 20
+
 
 # ── History ──
 

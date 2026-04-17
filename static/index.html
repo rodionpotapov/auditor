@@ -14,6 +14,39 @@
 }
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
 
+
+/* ── Документация ── */
+.doc-text { font-size: 13px; line-height: 1.7; color: var(--text); }
+.doc-text p { margin-bottom: 10px; }
+.doc-text code { background: #f0f2f6; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: monospace; }
+.doc-list { padding-left: 18px; margin: 8px 0 10px; }
+.doc-list li { margin-bottom: 6px; }
+
+.doc-steps { display: flex; flex-direction: column; gap: 10px; margin: 14px 0 4px; }
+.doc-step { display: flex; align-items: center; gap: 12px; }
+.doc-step-n { width: 24px; height: 24px; background: var(--acc); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+
+.doc-risk-legend { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.doc-risk-item { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+
+.doc-boosters { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 12px 0; }
+.doc-booster-row { display: grid; grid-template-columns: 200px 1fr; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.doc-booster-row:last-child { border-bottom: none; }
+.doc-booster-name { font-weight: 600; color: var(--text); }
+.doc-booster-desc { color: var(--muted); }
+
+.doc-endpoint { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 14px 0; }
+.doc-endpoint-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f8f9fc; border-bottom: 1px solid var(--border); }
+.doc-endpoint-desc { color: var(--muted); font-size: 12px; margin-left: auto; }
+.doc-endpoint-body { padding: 14px; font-size: 13px; }
+.doc-endpoint-body p { margin-bottom: 8px; }
+.doc-method { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.doc-method.post { background: #ebf8ff; color: #2b6cb0; }
+.doc-method.get  { background: #f0fff4; color: #276749; }
+.doc-endpoint-header code { background: transparent; font-size: 13px; font-weight: 600; }
+
+.doc-code { background: #1a2035; color: #a8b8d8; padding: 12px 14px; border-radius: 6px; font-size: 12px; font-family: monospace; line-height: 1.6; overflow-x: auto; white-space: pre; margin: 10px 0; }
+
 /* Сайдбар */
 .sidebar{width:240px;min-width:240px;background:var(--sb);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;}
 .sb-brand{padding:14px 16px;background:var(--sb2);border-bottom:1px solid var(--sbb);}
@@ -32,6 +65,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .sb-company-actions{display:flex;gap:6px;margin-top:6px;}
 .sb-company-btn{flex:1;padding:4px 0;background:#1f2b42;border:1px solid #2d3f5a;border-radius:5px;color:#8896b0;font-size:10px;font-weight:600;cursor:pointer;text-align:center;}
 .sb-company-btn:hover{background:#253348;color:#c0cce0;}
+.sb-company-btn.danger { color: #fc8181; }
+.sb-company-btn.danger:hover { background: #2d1f1f; color: #feb2b2; }
 
 .sb-sec{padding:12px 16px 4px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#364256;}
 .sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:13px;color:var(--sbt);cursor:pointer;border-left:3px solid transparent;transition:all .12s;user-select:none;}
@@ -39,8 +74,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .sb-item.active{background:#1f2b42;color:#fff;border-left-color:var(--acc);font-weight:600;}
 .sb-item-icon{width:18px;text-align:center;opacity:.7;flex-shrink:0;}
 .sb-item.active .sb-item-icon{opacity:1;}
-.sb-company-btn.danger { color: #fc8181; }
-.sb-company-btn.danger:hover { background: #2d1f1f; color: #feb2b2; }
 .sb-item-label{flex:1;}
 .tip-wrap{position:relative;margin-left:auto;}
 .tip-btn{width:16px;height:16px;background:#2a3550;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#5a6d8c;cursor:help;border:none;transition:all .12s;}
@@ -143,7 +176,7 @@ tbody td{padding:9px 14px;color:var(--text);}
 .risk-low{background:#f0fff4;color:var(--green);border:1px solid #c6f6d5;}
 .wl-btn{padding:3px 10px;background:#f7f9fc;border:1px solid var(--border);border-radius:5px;font-size:11px;font-weight:600;color:#4a5568;cursor:pointer;white-space:nowrap;transition:all .12s;}
 .wl-btn:hover{background:#ebf4ff;border-color:#bee3f8;color:var(--acc);}
-.wl-btn.added{background:#f0fff4;border-color:#c6f6d5;color:var(--green);cursor:default;}
+.wl-btn.added{background:#f0fff4;border-color:#c6f6d5;color:var(--green);cursor:pointer;}.wl-btn.undo{background:#fff8f0;border-color:#fbd38d;color:#c05621;}
 .download-btn{padding:9px 22px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(56,161,105,.3);transition:all .15s;display:inline-flex;align-items:center;gap:8px;}
 .download-btn:hover{background:#2f855a;transform:translateY(-1px);}
 .ok-bar{background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;padding:10px 16px;font-size:12px;color:#276749;display:flex;gap:20px;margin-top:8px;}
@@ -273,6 +306,9 @@ tbody td{padding:9px 14px;color:var(--text);}
   </div>
   <div class="sb-item" onclick="showPage('settings',this)">
     <span class="sb-item-icon">⚙️</span><span class="sb-item-label">Настройки</span>
+  </div>
+  <div class="sb-item" onclick="showPage('docs',this)">
+    <span class="sb-item-icon">📖</span><span class="sb-item-label">Документация</span>
   </div>
   <div class="sb-divider"></div>
   <div class="sb-footer">🔒 Все данные обрабатываются локально<br>Версия 1.0.0 · © ИнфоТэк, 2026</div>
@@ -454,7 +490,7 @@ tbody td{padding:9px 14px;color:var(--text);}
 
     <div class="card">
       <div class="card-title">
-        📈 Бустеры риска (установлены оптимальные значения по умолчанию, менять при необходимости)
+        📈 Бустеры риска(установлены оптимальные значения по умолчанию, менять при необходимости)
         <div class="tip-wrap" style="margin-left:4px;">
           <button class="tip-btn">?</button>
           <div class="tip-text">Множитель риска при наличии признака. Берётся максимальный из сработавших. 1.0 = бустер отключён.</div>
@@ -475,6 +511,192 @@ tbody td{padding:9px 14px;color:var(--text);}
       <div id="api-keys-list"></div>
     </div>
   </div>
+
+  <!-- ───────────── ДОКУМЕНТАЦИЯ ───────────── -->
+  <div class="page" id="page-docs">
+    <div class="top-bar">
+      <div class="top-title">📖 Документация</div>
+      <div class="top-sub">Руководство пользователя и справочник по API</div>
+    </div>
+
+    <!-- Что такое Аудитор -->
+    <div class="card">
+      <div class="card-title">🔍 Что такое Аудитор</div>
+      <div class="doc-text">
+        <p><b>Аудитор</b> — ML-модуль для автоматического поиска аномальных проводок в журнале 1С:Бухгалтерия. Система анализирует выгрузку и выявляет операции, которые статистически отличаются от нормального поведения: ручные правки, нетипичные суммы, подозрительные пары счетов, операции в нерабочее время.</p>
+        <p>Все данные обрабатываются <b>локально</b> на вашем компьютере. Проводки нигде не сохраняются и не передаются.</p>
+        <div class="doc-steps">
+          <div class="doc-step"><span class="doc-step-n">1</span><span>Загрузите CSV-выгрузку журнала проводок из 1С</span></div>
+          <div class="doc-step"><span class="doc-step-n">2</span><span>Модель обучается на ваших данных и находит аномалии</span></div>
+          <div class="doc-step"><span class="doc-step-n">3</span><span>Просмотрите результаты, скачайте Excel-отчёт или добавьте нормальные операции в Whitelist</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Как читать результаты -->
+    <div class="card">
+      <div class="card-title">📊 Как читать результаты анализа</div>
+      <div class="doc-text">
+        <p>Каждой проводке присваивается <b>Риск (0–100)</b>. Чем выше значение — тем сильнее операция отличается от нормы.</p>
+        <div class="doc-risk-legend">
+          <div class="doc-risk-item"><span class="risk-badge risk-high">80–100</span><span>Высокий риск — требует первоочередной проверки</span></div>
+          <div class="doc-risk-item"><span class="risk-badge risk-med">60–79</span><span>Средний риск — желательно проверить</span></div>
+          <div class="doc-risk-item"><span class="risk-badge risk-low">0–59</span><span>Низкий риск — фоновые отклонения</span></div>
+        </div>
+        <p style="margin-top:12px;">Колонка <b>Причина</b> объясняет почему операция попала в отчёт. Возможные причины:</p>
+        <ul class="doc-list">
+          <li><b>Ручная проводка</b> — проводка введена вручную, а не создана документом</li>
+          <li><b>Редкая пара счетов</b> — такая комбинация счетов Дт/Кт встречается редко в вашей базе</li>
+          <li><b>Сумма необычно большая</b> — сумма значительно выше типичной для данной пары счетов</li>
+          <li><b>Операция в нерабочее время</b> — проводка создана ночью (после 20:00 или до 8:00)</li>
+          <li><b>Операция в выходной день</b> — суббота или воскресенье</li>
+          <li><b>Первая операция с контрагентом</b> — контрагент ранее не встречался в базе</li>
+          <li><b>Подозрительная пара счетов</b> — пара входит в список заведомо проблемных</li>
+          <li><b>Сторно</b> — отрицательная сумма</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Whitelist -->
+    <div class="card">
+      <div class="card-title">✅ Whitelist — известные нормальные операции</div>
+      <div class="doc-text">
+        <p>Whitelist — это список операций, которые система должна <b>игнорировать</b>. Если бухгалтер подтвердил что операция нормальная — добавьте её в Whitelist, и при следующем анализе она не попадёт в отчёт.</p>
+        <p><b>Два типа правил:</b></p>
+        <ul class="doc-list">
+          <li><b>По типу документа</b> — все операции с таким типом документа исключаются из анализа (например, «Регламентная операция», «Закрытие месяца»). Работает только для автоматических операций (не ручных).</li>
+          <li><b>По паре счетов</b> — операции с конкретной парой счетов Дт/Кт в сочетании с указанным типом документа исключаются. Например: пара <code>84.01_51</code> + «Списание с расчетного счета» — это выплата дивидендов, она нормальная.</li>
+        </ul>
+        <p><b>Важно:</b> ручные проводки (<code>is_manual=1</code>) <b>не обнуляются</b> через Whitelist по типу документа — они всегда попадают в отчёт, так как любая ручная корректировка заслуживает внимания.</p>
+        <p>Whitelist можно <b>экспортировать</b> в JSON и <b>импортировать</b> обратно — удобно для передачи настроек между компаниями.</p>
+      </div>
+    </div>
+
+    <!-- Бустеры -->
+    <div class="card">
+      <div class="card-title">⚡ Бустеры риска</div>
+      <div class="doc-text">
+        <p>Бустеры — это <b>множители</b> которые увеличивают итоговый риск-скор при наличии определённых признаков. Если у операции несколько признаков одновременно — применяется <b>максимальный</b> из сработавших бустеров (не перемножаются).</p>
+        <p>Например: проводка ручная (×1.5) и ночная (×1.4) — итоговый множитель будет ×1.5, а не ×2.1.</p>
+        <div class="doc-boosters">
+          <div class="doc-booster-row">
+            <div class="doc-booster-name">Ручная проводка</div>
+            <div class="doc-booster-desc">Проводка создана вручную оператором, а не сформирована документом автоматически. Наиболее значимый признак риска.</div>
+          </div>
+          <div class="doc-booster-row">
+            <div class="doc-booster-name">Подозрительная пара счетов</div>
+            <div class="doc-booster-desc">Пара счетов входит в список заведомо проблемных: 71.01→50.02 (подотчёт наличными), 60.01→91.01 (списание долга поставщика в доходы), 76.09→76.09 (самозачёт).</div>
+          </div>
+          <div class="doc-booster-row">
+            <div class="doc-booster-name">Крупная сумма</div>
+            <div class="doc-booster-desc">Сумма операции значительно превышает среднюю для данной пары счетов — статистический выброс.</div>
+          </div>
+          <div class="doc-booster-row">
+            <div class="doc-booster-name">Нерабочее время</div>
+            <div class="doc-booster-desc">Операция создана ночью (до 8:00 или после 20:00) либо в выходной день.</div>
+          </div>
+          <div class="doc-booster-row">
+            <div class="doc-booster-name">Первая операция с контрагентом</div>
+            <div class="doc-booster-desc">Контрагент встречается в базе впервые — повышенное внимание к новым контрагентам оправдано.</div>
+          </div>
+        </div>
+        <p style="margin-top:12px;">Значения бустеров настраиваются в разделе <b>Настройки</b> для каждого юрлица отдельно. Ползунок влево — стандартное усиление, вправо — максимальное.</p>
+      </div>
+      <div class="card">
+  <div class="card-title">🎯 Чувствительность модели (LOF)</div>
+  <div class="doc-text">
+    <p>Параметр <b>Чувствительность модели</b> управляет алгоритмом LOF — одним из двух методов обнаружения аномалий в ансамбле. LOF оценивает каждую операцию относительно её соседей: если операция сильно отличается от ближайших похожих — она аномальная.</p>
+    <p>Параметр задаёт <b>количество соседей</b> которые алгоритм учитывает при оценке:</p>
+    <ul class="doc-list">
+      <li><b>Большое значение (50–100)</b> — алгоритм смотрит на широкое окружение, выявляет только явные глобальные выбросы. Меньше ложных срабатываний, но некоторые реальные аномалии могут быть пропущены.</li>
+      <li><b>Маленькое значение (5–20)</b> — алгоритм чувствителен к локальным отклонениям, находит больше аномалий. Выше риск ложных срабатываний.</li>
+    </ul>
+    <p>По умолчанию: <b>50</b>. Настраивается в разделе <b>Настройки</b> для каждого юрлица отдельно.</p>
+    <p>⚠️ Чем выше значение тем больше нужно времени на анализ. На больших датасетах(600к+ строк) больше 80 ставить не рекомендую, иначе нужно будеь ждать несколько минут</p>
+  </div>
+</div>
+    </div>
+
+    <!-- Юрлица -->
+    <div class="card">
+      <div class="card-title">🏢 Юридические лица</div>
+      <div class="doc-text">
+        <p>Система поддерживает несколько юридических лиц. У каждого юрлица — <b>свой Whitelist</b>, <b>свои настройки бустеров</b>, <b>своя история анализов</b> и <b>свои API-ключи</b>.</p>
+        <p>При создании нового юрлица автоматически создаются: стандартный Whitelist из типовых регламентных операций, дефолтные значения бустеров и первый API-ключ.</p>
+        <p>Переключение между юрлицами — через выпадающий список в левой панели. При переключении все данные (Whitelist, история, настройки) автоматически обновляются.</p>
+      </div>
+    </div>
+
+    <!-- API -->
+    <div class="card">
+      <div class="card-title">🔌 API для интеграции с 1С</div>
+      <div class="doc-text">
+        <p>Аудитор предоставляет HTTP API для прямой интеграции из 1С или других систем. Все запросы требуют заголовок <code>X-Api-Key</code> с ключом юрлица (берётся в разделе Настройки).</p>
+
+        <div class="doc-endpoint">
+          <div class="doc-endpoint-header">
+            <span class="doc-method post">POST</span>
+            <code>/api/analyze/</code>
+            <span class="doc-endpoint-desc">Анализ — ответ в формате Excel</span>
+          </div>
+          <div class="doc-endpoint-body">
+            <p>Загрузите CSV-файл и получите Excel-отчёт с аномалиями — тот же формат что и через интерфейс.</p>
+            <pre class="doc-code">POST http://&lt;адрес&gt;:8000/api/analyze/
+X-Api-Key: ваш_ключ_здесь
+Content-Type: multipart/form-data
+
+file: &lt;файл.csv&gt;
+
+← 200 OK
+Content-Type: application/vnd.openxmlformats...
+Content-Disposition: attachment; filename=anomalies.xlsx</pre>
+          </div>
+        </div>
+
+        <div class="doc-endpoint">
+          <div class="doc-endpoint-header">
+            <span class="doc-method post">POST</span>
+            <code>/api/analyze/json/</code>
+            <span class="doc-endpoint-desc">Анализ — ответ в формате JSON</span>
+          </div>
+          <div class="doc-endpoint-body">
+            <p>Возвращает список аномалий в JSON. Удобно для обработки результатов программно — например, для подсветки строк прямо в 1С.</p>
+            <pre class="doc-code">POST http://&lt;адрес&gt;:8000/api/analyze/json/
+X-Api-Key: ваш_ключ_здесь
+Content-Type: multipart/form-data
+
+file: &lt;файл.csv&gt;
+
+← 200 OK
+{
+  "company": "ООО Ромашка",
+  "analyzed_at": "2026-04-17T14:00:00",
+  "total_rows": 368033,
+  "anomalies_found": 43,
+  "high_risk": 8,
+  "anomalies": [
+    {
+      "date": "2023-11-15 22:14:00",
+      "account_dt": "71.01",
+      "account_kt": "50.02",
+      "amount": 450000.0,
+      "contractor": "ИП Иванов",
+      "doc_type": "Ручная операция",
+      "risk_score": 94.5,
+      "reason": "Ручная проводка; Подозрительная пара счетов"
+    }
+  ]
+}</pre>
+            <p style="margin-top:8px;"><b>Поля ответа:</b></p>
+            <ul class="doc-list">
+              <li><code>risk_score</code> — итоговый риск от 0 до 100</li>
+              <li><code>reason</code> — текстовое описание причин через «; »</li>
+              <li><code>anomalies</code> — только операции с риском &gt; 0 и суммой ≥ 100 руб.</li>
+            </ul>
+          </div>
+        </div>
+
+        
 
 </main>
 
