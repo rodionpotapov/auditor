@@ -141,14 +141,19 @@ function renderWhitelist(rules) {
 
   list.innerHTML = rules.map(r => {
     const isDoc = r.type === 'doc_type';
+    const isGlobal = !!r.is_global;
     const badge = isDoc
       ? `<span class="wl-badge doc">Тип документа</span>`
       : `<span class="wl-badge pair">Пара счетов</span>`;
     const text = isDoc
       ? `<div class="wl-rule-text">${r.doc_type}</div>`
       : `<div class="wl-rule-text">${r.account_pair.replace('_', '→')}<div class="wl-rule-sub">${r.doc_type}</div></div>`;
+    const globalBtn = `<button class="wl-global-btn ${isGlobal ? 'active' : ''}"
+      onclick="toggleGlobalRule(${r.id},'${r.type}','${r.doc_type}','${r.account_pair}',${isGlobal})"
+      title="${isGlobal ? 'Убрать из глобального' : 'Сделать глобальным'}">🌐</button>`;
     return `<div class="wl-rule">${badge}${text}
-      <button class="wl-del" onclick="deleteWlRule(${r.id})" title="Удалить">✕</button>
+      ${globalBtn}
+      <button class="wl-del" onclick="deleteWlRule(${r.id}, ${isGlobal === true})" title="Удалить">✕</button>
     </div>`;
   }).join('');
 }

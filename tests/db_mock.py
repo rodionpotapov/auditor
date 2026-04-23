@@ -132,7 +132,7 @@ sys.modules['src.model'] = _ml
 
 # src.report_generator
 _rg = types.ModuleType('src.report_generator')
-def _generate_report(df):
+def _generate_report(df, top_n=2000):
     import io
     import openpyxl
     wb = openpyxl.Workbook()

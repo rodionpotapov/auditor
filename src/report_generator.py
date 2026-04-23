@@ -5,13 +5,13 @@ import pandas as pd
 from src.config import MIN_AMOUNT, REPORT_TOP_N
 
 
-def generate_report(data: pd.DataFrame) -> bytes:
+def generate_report(data: pd.DataFrame, top_n: int = REPORT_TOP_N) -> bytes:
     """Генерирует Excel отчёт в памяти и возвращает байты для скачивания."""
 
     # Топ аномалий с фильтром по минимальной сумме
     report_data = (
         data[data["abs_amount"] >= MIN_AMOUNT]
-        .nlargest(REPORT_TOP_N, "boosted_score")
+        .nlargest(top_n, "boosted_score")
         [[
             "Период", "СчетДт", "СчетКт", "Сумма", "pair_mean",
             "Контрагент", "Содержание", "ТипДокумента", "boosted_score", "explanation"

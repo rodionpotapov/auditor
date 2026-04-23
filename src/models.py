@@ -5,7 +5,7 @@ def _utcnow():
     return datetime.now(timezone.utc)
 
 from sqlalchemy import (
-    Integer, String, Float, DateTime, ForeignKey, UniqueConstraint
+    Integer, String, Float, DateTime, ForeignKey, UniqueConstraint, Boolean
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -44,11 +44,12 @@ class WhitelistRule(Base):
     )
 
     id:           Mapped[int]      = mapped_column(Integer, primary_key=True, index=True)
-    company_id:   Mapped[int]      = mapped_column(Integer, ForeignKey("companies.id", ondelete="CASCADE"))
+    company_id:   Mapped[int]      = mapped_column(Integer, ForeignKey("companies.id", ondelete="CASCADE"), nullable=True)
     type:         Mapped[str]      = mapped_column(String(20), nullable=False)   # "doc_type" | "pair"
     doc_type:     Mapped[str]      = mapped_column(String(255), default="")
     account_pair: Mapped[str]      = mapped_column(String(50),  default="")
     created_at:   Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    is_global: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     company: Mapped["Company"] = relationship(back_populates="whitelist_rules")
 

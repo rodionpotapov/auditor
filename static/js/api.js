@@ -45,7 +45,10 @@ async function apiAnalyze(companyId, file) {
   fd.append('file', file, file.name);
   const resp = await fetch(`${API}/analyze/${companyId}/`, { method: 'POST', body: fd });
   if (!resp.ok) throw new Error(`Ошибка сервера ${resp.status}: ${await resp.text()}`);
-  return await resp.arrayBuffer();
+  const bytes = await resp.arrayBuffer();
+  const total = resp.headers.get('X-Total-Anomalies');
+  const topN  = resp.headers.get('X-Top-N');
+  return { bytes, total: parseInt(total), topN: parseInt(topN) };
 }
 
 // ── Autocomplete ──
@@ -69,6 +72,24 @@ async function apiAddWhitelistRule(companyId, rule) {
     body: JSON.stringify(rule),
   });
   return await resp.json();
+}
+
+async function apiGetGlobalWhitelist() {
+  const resp = await fetch(`${API}/whitelist/global/`);
+  return await resp.json();
+}
+
+async function apiAddGlobalWhitelistRule(rule) {
+  const resp = await fetch(`${API}/whitelist/global/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(rule),
+  });
+  return await resp.json();
+}
+
+async function apiDeleteGlobalWhitelistRule(ruleId) {
+  await fetch(`${API}/whitelist/global/${ruleId}`, { method: 'DELETE' });
 }
 
 async function apiDeleteWhitelistRule(ruleId) {

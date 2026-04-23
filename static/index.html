@@ -216,6 +216,8 @@ tbody td{padding:9px 14px;color:var(--text);}
 .wl-add-btn:hover{background:#3a7ae4;}
 .wl-example{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6;}
 .wl-example b{color:#4a5568;}
+.wl-global-btn { background: none; border: 1px solid var(--border); border-radius: 5px; padding: 2px 6px; cursor: pointer; font-size: 13px; color: var(--muted); }
+.wl-global-btn.active { border-color: #4299e1; color: #4299e1; }
 
 /* Настройки — бустеры */
 .booster-row{display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid #f0f2f6;}
@@ -570,6 +572,14 @@ tbody td{padding:9px 14px;color:var(--text);}
         <p><b>Важно:</b> ручные проводки (<code>is_manual=1</code>) <b>не обнуляются</b> через Whitelist по типу документа — они всегда попадают в отчёт, так как любая ручная корректировка заслуживает внимания.</p>
         <p>Whitelist можно <b>экспортировать</b> в JSON и <b>импортировать</b> обратно — удобно для передачи настроек между компаниями.</p>
       </div>
+      <div class="card">
+      <div class="card-title">🌐 Глобальный Whitelist</div>
+      <div class="doc-text">
+        <p>Глобальный Whitelist — это набор правил которые применяются <b>ко всем юрлицам</b> автоматически, без необходимости добавлять их в каждую компанию отдельно.</p>
+        <p>Чтобы сделать правило глобальным — нажми кнопку <b>🌐</b> рядом с ним на странице Whitelist. Повторный клик убирает правило из глобальных. При удалении глобального правила через крестик система предупредит что оно применяется ко всем юрлицам.</p>
+        <p>Глобальные правила удобно использовать для типовых операций которые нормальны для любого юрлица — например регламентные закрытия месяца или стандартные банковские операции.</p>
+      </div>
+</div>
     </div>
 
     <!-- Бустеры -->

@@ -105,14 +105,15 @@ async def analyze(
     data, X = build_features(data)
     boosters = crud.get_boosters(db, company_id)
     data = train_and_score(data, X, boosters.lof_n_neighbors if boosters else 50)
-
+    global_whitelist = crud.get_global_whitelist(db)
     whitelist = crud.get_whitelist(db, company_id)
-    data = apply_score(data, boosters=boosters, whitelist_rules=whitelist)
+    data = apply_score(data, boosters=boosters, whitelist_rules=whitelist + global_whitelist)
 
-    report_bytes = generate_report(data)
+    top_n = min(int(len(data) * 0.01), 2000)
+    report_bytes = generate_report(data, top_n)
 
     report_df = data[data["abs_amount"] >= MIN_AMOUNT].query("boosted_score > 0")
-    total     = min(len(report_df), 2000)
+    total     = min(len(report_df), top_n)
     high_risk = int((report_df["boosted_score"] >= 80).sum())
 
     crud.add_history(db, company_id, file.filename, len(data), total, high_risk)
@@ -120,8 +121,13 @@ async def analyze(
     return Response(
         content=report_bytes,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment; filename=anomalies.xlsx"},
-    )
+        headers={
+            "Content-Disposition": "attachment; filename=anomalies.xlsx",
+            "X-Total-Anomalies": str(total),
+            "X-Top-N": str(top_n),
+            "Access-Control-Expose-Headers": "X-Total-Anomalies, X-Top-N",
+        },
+)
 
 
 # ── Анализ (внешний API — по API ключу из 1С) ──
@@ -192,18 +198,38 @@ class WhitelistRuleBody(BaseModel):
     doc_type: str = ""
     account_pair: str = ""
 
+@app.get("/whitelist/global/")
+def get_global_whitelist(db: Session = Depends(get_db)):
+    rules = crud.get_global_whitelist(db)
+    return {"rules": [
+        {"id": r.id, "type": r.type, "doc_type": r.doc_type, "account_pair": r.account_pair}
+        for r in rules
+    ]}
+
+@app.post("/whitelist/global/")
+def add_global_whitelist_rule(body: WhitelistRuleBody, db: Session = Depends(get_db)):
+    rule = crud.add_global_whitelist_rule(db, body.type, body.doc_type, body.account_pair)
+    return {"id": rule.id, "type": rule.type, "doc_type": rule.doc_type, "account_pair": rule.account_pair}
+
+@app.delete("/whitelist/global/{rule_id}")
+def delete_global_whitelist_rule(rule_id: int, db: Session = Depends(get_db)):
+    ok = crud.delete_global_whitelist_rule(db, rule_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Правило не найдено")
+    return {"ok": True}
+
 @app.get("/companies/{company_id}/whitelist/")
 def get_whitelist(company_id: int, db: Session = Depends(get_db)):
     rules = crud.get_whitelist(db, company_id)
     return {"rules": [
-        {"id": r.id, "type": r.type, "doc_type": r.doc_type, "account_pair": r.account_pair}
+        {"id": r.id, "type": r.type, "doc_type": r.doc_type, "account_pair": r.account_pair, "is_global": r.is_global}
         for r in rules
     ]}
 
 @app.post("/companies/{company_id}/whitelist/")
 def add_whitelist_rule(company_id: int, body: WhitelistRuleBody, db: Session = Depends(get_db)):
     rule = crud.add_whitelist_rule(db, company_id, body.type, body.doc_type, body.account_pair)
-    return {"id": rule.id, "type": rule.type, "doc_type": rule.doc_type, "account_pair": rule.account_pair}
+    return {"id": rule.id, "type": rule.type, "doc_type": rule.doc_type, "account_pair": rule.account_pair, "is_global": rule.is_global}
 
 @app.delete("/whitelist/{rule_id}")
 def delete_whitelist_rule(rule_id: int, db: Session = Depends(get_db)):
