@@ -30,12 +30,13 @@ docker-compose up --build
 
 pip install -r requirements.txt
 
-# Создай в корне .env файл с параметрами подключения к БД:
-# DB_HOST=localhost
-# DB_PORT=5432
-# DB_NAME=auditor
-# DB_USER=postgres
-# DB_PASSWORD=yourpassword
+Создай в корне .env файл:
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=auditor
+DB_USER=postgres
+DB_PASSWORD=yourpassword
 
 createdb auditor
 uvicorn src.api:app --reload
