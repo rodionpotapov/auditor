@@ -28,12 +28,21 @@ async function loadCompanies() {
     const companies = await apiGetCompanies();
     renderCompanySelector(companies, currentCompanyId);
 
+    const savedId = parseInt(localStorage.getItem('currentCompanyId'));
+    const savedPage = localStorage.getItem('currentPage');
+
     if (companies.length === 0) {
       showCompanyModal();
-    } else if (!currentCompanyId) {
-      currentCompanyId = companies[0].id;
+    } else {
+      const found = companies.find(c => c.id === savedId);
+      currentCompanyId = found ? savedId : companies[0].id;
       document.getElementById('company-select').value = currentCompanyId;
-      updateCompanyBadge(companies[0].name);
+      updateCompanyBadge(companies.find(c => c.id === currentCompanyId)?.name || '');
+    }
+
+    if (savedPage && savedPage !== 'analyze') {
+      const sbItem = document.querySelector(`.sb-item[onclick*="'${savedPage}'"]`);
+      if (sbItem) showPage(savedPage, sbItem);
     }
   } catch (e) {
     console.error('Не удалось загрузить компании:', e);
@@ -42,11 +51,11 @@ async function loadCompanies() {
 
 function onCompanyChange(sel) {
   currentCompanyId = parseInt(sel.value);
-  const name = sel.options[sel.selectedIndex].text;
-  updateCompanyBadge(name);
-  // Сбрасываем результаты при смене компании
+  localStorage.setItem('currentCompanyId', currentCompanyId);
+  updateCompanyBadge(sel.options[sel.selectedIndex].text);
   allRows = [];
   document.getElementById('results').classList.remove('show');
+  refreshCurrentPage();
 }
 
 function updateCompanyBadge(name) {
@@ -82,6 +91,17 @@ async function addNewCompany() {
   updateCompanyBadge(company.name);
 }
 
+
+async function deleteCurrentCompany() {
+  if (!currentCompanyId) return;
+  const name = document.getElementById('company-select')
+    .options[document.getElementById('company-select').selectedIndex].text;
+  if (!confirm(`Удалить «${name}» и все связанные данные?`)) return;
+  await apiDeleteCompany(currentCompanyId);
+  currentCompanyId = null;
+  await loadCompanies();
+}
+
 // ── Навигация ──
 
 function showPage(name, el) {
@@ -89,6 +109,7 @@ function showPage(name, el) {
   document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   el.classList.add('active');
+  localStorage.setItem('currentPage', name);
   if (name === 'whitelist') loadWhitelist();
   if (name === 'history')   loadHistory();
   if (name === 'settings')  loadSettings();
@@ -198,7 +219,7 @@ async function runAnalysis() {
   document.getElementById('results').classList.remove('show');
 
   try {
-    const bytes = await apiAnalyze(currentCompanyId, selectedFile);
+    const { bytes, total, topN } = await apiAnalyze(currentCompanyId, selectedFile);
     const wb = XLSX.read(bytes, { type: 'array', cellDates: false });
     const ws    = wb.Sheets[wb.SheetNames[0]];
     allRows     = XLSX.utils.sheet_to_json(ws, { defval: '' });
@@ -300,8 +321,23 @@ async function addToWhitelist(btn, docType, acctDt, acctKt) {
   btn.classList.add('added', 'undo');
 }
 
-async function deleteWlRule(ruleId) {
-  await apiDeleteWhitelistRule(ruleId);
+async function deleteWlRule(ruleId, isGlobal) {
+  if (isGlobal) {
+    if (!confirm('Это глобальное правило — оно применяется ко всем юрлицам. Удалить?')) return;
+    await apiDeleteGlobalWhitelistRule(ruleId);
+  } else {
+    await apiDeleteWhitelistRule(ruleId);
+  }
+  loadWhitelist();
+}
+
+async function toggleGlobalRule(ruleId, type, docType, accountPair, isGlobal) {
+  if (isGlobal) {
+    if (!confirm('Убрать правило из глобального whitelist?')) return;
+    await apiDeleteGlobalWhitelistRule(ruleId);
+  } else {
+    await apiAddGlobalWhitelistRule({ type, doc_type: docType, account_pair: accountPair });
+  }
   loadWhitelist();
 }
 

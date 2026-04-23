@@ -93,11 +93,46 @@ def get_company_by_api_key(db: Session, api_key: str) -> Company | None:
 
 # ── Whitelist ──
 
-def get_whitelist(db: Session, company_id: int) -> list[WhitelistRule]:
-    return db.query(WhitelistRule).filter(WhitelistRule.company_id == company_id).all()
+def get_global_whitelist(db: Session) -> list[WhitelistRule]:
+    return db.query(WhitelistRule).filter(WhitelistRule.is_global == True).all()
 
+def add_global_whitelist_rule(db: Session, type: str, doc_type: str = "", account_pair: str = "") -> WhitelistRule:
+    existing = db.query(WhitelistRule).filter(
+        WhitelistRule.is_global == True,
+        WhitelistRule.type == type,
+        WhitelistRule.doc_type == doc_type,
+        WhitelistRule.account_pair == account_pair,
+    ).first()
+    if existing:
+        return existing
+
+    rule = WhitelistRule(
+        company_id=None,
+        type=type,
+        doc_type=doc_type,
+        account_pair=account_pair,
+        is_global=True
+    )
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+    return rule
+
+def delete_global_whitelist_rule(db: Session, rule_id: int) -> bool:
+    rule = db.query(WhitelistRule).filter(WhitelistRule.id == rule_id).first()
+    if not rule:
+        return False
+    db.delete(rule)
+    db.commit()
+    return True
+
+def get_whitelist(db: Session, company_id: int) -> list[WhitelistRule]:
+    return db.query(WhitelistRule).filter(
+        (WhitelistRule.company_id == company_id) | (WhitelistRule.is_global == True)
+    ).all()
 def add_whitelist_rule(db: Session, company_id: int, type: str, doc_type: str = "", account_pair: str = "") -> WhitelistRule | None:
     # Проверяем дубли
+    
     existing = db.query(WhitelistRule).filter(
         WhitelistRule.company_id == company_id,
         WhitelistRule.type == type,

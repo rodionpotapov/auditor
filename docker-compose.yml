@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   postgres:
@@ -8,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: auditor
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -23,11 +21,9 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@postgres:5432/auditor
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/auditor
     volumes:
       - app_data:/app/data
-      - app_data:/app/data
-      - ./static:/app/static
     depends_on:
       postgres:
         condition: service_healthy
