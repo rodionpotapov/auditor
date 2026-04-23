@@ -27,9 +27,9 @@ docker-compose up --build
 Открывай http://localhost:8000 — всё готово.
 
 ## Без Docker
-
+```bash
 pip install -r requirements.txt
-
+```
 Создай в корне .env файл:
 
 DB_HOST=localhost
